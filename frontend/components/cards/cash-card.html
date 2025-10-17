@@ -1,0 +1,97 @@
+<div class="col-lg-4 col-md-6 mb-4">
+  <div class="card-summary info position-relative">
+    <div class="card-body d-flex flex-column justify-content-between h-100">
+      <!-- Header: Título y monto principal -->
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="flex-grow-1">
+          <p class="text-muted small mb-1">Caja Registradora</p>
+          <h4 id="cash-amount" class="mb-0">$0.00</h4>
+          <p id="cash-user" class="small text-muted mb-0">Operador: --</p>
+        </div>
+        <i class="material-icons text-info ms-2">shopping_cart</i>
+      </div>
+
+      <!-- Estado principal -->
+      <div class="mb-3">
+        <p id="cash-start" class="small text-muted mb-1">Caja cerrada</p>
+        <p id="cash-status" class="small mb-2">
+          <span class="badge bg-danger">Cerrada</span>
+        </p>
+
+        <!-- MÉTRICAS EN TIEMPO REAL cuando está abierta -->
+        <div id="cash-metrics" class="d-none">
+          <!-- Ventas del día -->
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Ventas hoy:</span>
+            <span id="sales-today" class="fw-bold text-success">$0.00</span>
+          </div>
+
+          <!-- Transacciones -->
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Transacciones:</span>
+            <span id="transactions-count" class="fw-medium">0</span>
+          </div>
+
+          <!-- Ganancia del día -->
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Ganancia:</span>
+            <span id="profit-today" class="fw-bold text-primary">$0.00</span>
+          </div>
+
+          <!-- Métodos de pago -->
+          <div class="small text-muted mb-2">
+            <div class="d-flex justify-content-between">
+              <span>Efectivo:</span>
+              <span id="cash-payments">$0.00</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Tarjeta:</span>
+              <span id="card-payments">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Tiempo activa -->
+          <div class="d-flex justify-content-between small text-muted">
+            <span>Tiempo activa:</span>
+            <span id="open-duration">0h 0m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción MEJORADOS -->
+      <div class="d-flex gap-2 align-items-center mb-3">
+        <!-- Botón principal -->
+        <button id="btn-cash-action" class="btn btn-success btn-sm flex-grow-1">
+          <i class="material-icons align-middle me-1">point_of_sale</i>
+          Abrir Caja
+        </button>
+
+        <!-- Botón cerrar compacto -->
+        <button
+          id="btn-cash-close"
+          class="btn btn-danger btn-sm d-none"
+          style="width: 42px; height: 38px; padding: 0"
+          title="Cerrar Caja"
+          data-bs-toggle="tooltip"
+        >
+          <i class="material-icons" style="font-size: 18px">lock</i>
+        </button>
+      </div>
+
+      <!-- Barra de progreso y resumen -->
+      <div class="mt-auto">
+        <div class="d-flex justify-content-between small text-muted mb-1">
+          <span>Efectivo total:</span>
+          <span id="total-cash" class="fw-bold">$0.00</span>
+        </div>
+        <div class="progress" style="height: 6px">
+          <div
+            id="cash-progress-bar"
+            class="progress-bar bg-success"
+            style="width: 0%"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

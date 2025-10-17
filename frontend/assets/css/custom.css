@@ -1,0 +1,437 @@
+/* Estilos página LOGIN */
+
+/* Sticky footer para dashboard */
+body {
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main.main-content {
+  flex: 1;
+}
+
+footer.footer {
+  padding: 15px 0;
+}
+
+/* H1 GestionAR */
+.logo-gestionar {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 800;
+  font-size: 6rem;
+  line-height: 1;
+  color: #2b3a42;
+  margin: 0;
+  letter-spacing: -2px;
+  cursor: default;
+  transition: transform 0.3s ease-in-out;
+  display: inline-block;
+}
+
+.logo-gestionar:hover {
+  transform: scale(1.01);
+}
+
+.logo-ar {
+  color: #28a745;
+}
+
+/* Formulario Login */
+.form-border {
+  border: 2px solid #28a745;
+  border-radius: 15px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+/* Botón verde */
+.btn-login {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-login:hover {
+  color: white;
+  background-color: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Centrar verticalmente en toda la página */
+.page-header .row {
+  min-height: 100vh;
+  align-items: center;
+}
+
+/* Ajuste para input focus */
+.input-group-outline .form-control:focus {
+  border-color: #28a745 rgba(40, 167, 69, 0.25);
+}
+
+/* Desktop: separar main del sidebar */
+@media (min-width: 992px) {
+  main.main-content {
+    margin-left: 250px;
+    transition: margin-left 0.3s ease;
+  }
+}
+
+/* Mobile: agregar margen al form */
+@media (max-width: 991px) {
+  .card.form-border {
+    margin: 20px;
+  }
+}
+
+/* ================= ESTILOS DASHBOARD ================= */
+
+/* Sidenav */
+.sidenav-header {
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.sidenav-header .col-lg-6 {
+  width: 100%;
+}
+
+.gestionar-sidenav {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 800;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: #f8f9fa;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.logo-side-ar {
+  color: #28a745;
+}
+
+.sidenav-header .gestionar-sidenav {
+  color: #f8f9fa;
+}
+
+/* Navbar */
+.nav-item.d-flex.align-items-center a.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Cards del dashboard */
+.card-summary {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease-in-out;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 1rem 1.5rem;
+}
+
+.card-summary p {
+  font-size: 0.95rem;
+  color: #777;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.card-summary h5 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-top: 0;
+  word-break: break-word;
+}
+
+/* Iconos */
+.card-summary i {
+  font-size: 36px;
+  padding: 12px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Para el gráfico que ocupa 2 columnas */
+.card-summary canvas {
+  width: 100% !important;
+  height: 200px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-summary {
+    padding: 0.8rem 1rem;
+  }
+
+  .card-summary h5 {
+    font-size: 1.3rem;
+  }
+
+  .card-summary p {
+    font-size: 0.9rem;
+  }
+}
+
+/* ================= ESTILOS FORMULARIO DE VENTAS ================= */
+
+/* Overlay principal */
+#venta-form.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 1050;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#venta-form.overlay.show {
+  opacity: 1;
+}
+
+/* Contenido del formulario */
+#venta-form .overlay-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+#venta-form.overlay.show .overlay-content {
+  transform: translateY(0);
+}
+
+/* Header profesional */
+#venta-form .overlay-header {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#venta-form .overlay-header h4 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+#venta-form #close-form {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#venta-form #close-form:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Cuerpo del formulario */
+#venta-form .overlay-body {
+  padding: 1.5rem;
+}
+
+/* Filas de productos */
+#venta-form .producto-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+}
+
+/* Inputs dentro de filas */
+#venta-form .producto-row input {
+  flex: 1;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background-color: white;
+  color: #495057;
+}
+
+/* Botón eliminar fila */
+#venta-form .btn-remove-row {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#venta-form .btn-remove-row:hover {
+  background-color: #c82333;
+}
+
+/* Botón agregar producto */
+#venta-form #add-product {
+  background: transparent;
+  border: 2px dashed #28a745;
+  color: #28a745;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+}
+
+#venta-form #add-product:hover {
+  background: #28a745;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Sección total y método de pago */
+#venta-form .total-metodo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+#venta-form #total-venta {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #28a745;
+}
+
+#venta-form select#metodo {
+  min-width: 150px;
+  padding: 8px 12px;
+  border: 1px solid #28a745;
+  border-radius: 6px;
+  background-color: white;
+  color: #495057;
+}
+
+/* Sección cliente */
+#venta-form #cliente {
+  width: 100%;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background-color: white;
+  color: #495057;
+  margin-bottom: 10px;
+}
+
+#venta-form .form-check {
+  margin-top: 10px;
+}
+
+#venta-form .form-check-input {
+  accent-color: #28a745;
+}
+
+#venta-form .form-check-label {
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Botón confirmar venta */
+#venta-form #submit-venta {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+#venta-form #submit-venta:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+/* Material icons alignment */
+.material-icons.align-middle {
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 768px) {
+  #venta-form .producto-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #venta-form .total-metodo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  #venta-form .overlay-content {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  #venta-form select#metodo {
+    min-width: 100%;
+  }
+}
+
+/* ================= ANIMACIONES ================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
