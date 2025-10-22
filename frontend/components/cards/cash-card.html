@@ -61,7 +61,10 @@
       <!-- Botones de acción MEJORADOS -->
       <div class="d-flex gap-2 align-items-center mb-3">
         <!-- Botón principal -->
-        <button id="btn-cash-action" class="btn btn-success btn-sm flex-grow-1">
+        <button
+          id="btn-cash-action"
+          class="btn btn-success btn-sm flex-grow-1 cash-action-btn"
+        >
           <i class="material-icons align-middle me-1">point_of_sale</i>
           Abrir Caja
         </button>
@@ -69,7 +72,7 @@
         <!-- Botón cerrar compacto -->
         <button
           id="btn-cash-close"
-          class="btn btn-danger btn-sm d-none"
+          class="btn btn-danger btn-sm cash-close-btn d-none"
           style="width: 42px; height: 38px; padding: 0"
           title="Cerrar Caja"
           data-bs-toggle="tooltip"
@@ -87,7 +90,7 @@
         <div class="progress" style="height: 6px">
           <div
             id="cash-progress-bar"
-            class="progress-bar bg-success"
+            class="progress-bar bg-success cash-progress"
             style="width: 0%"
           ></div>
         </div>

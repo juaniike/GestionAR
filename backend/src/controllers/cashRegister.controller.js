@@ -1,3 +1,4 @@
+const { where } = require("sequelize");
 const cashRegisterServices = require("../services/cashRegister.service");
 
 const getById = async (req, res, next) => {
@@ -74,7 +75,7 @@ const update = async (req, res, next) => {
 const destroy = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const deleted = await cashRegisterServices.destroy(id);
+    const deleted = await cashRegisterServices.destroy({ where: { id } });
     if (!deleted)
       return next({ error: 404, message: "Cash register not found" });
     res.json({ message: "Cash register deleted successfully" });

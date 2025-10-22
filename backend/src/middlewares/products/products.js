@@ -17,8 +17,10 @@ const validateProduct = (req, res, next) => {
 
 const validateId = (req, res, next) => {
   const id = parseInt(req.params.id);
-  if (isNaN(id) || id <= 0)
-    return next({ error: 400, message: "Invalid product Id" });
+  if (isNaN(id) || id <= 0 || !Number.isInteger(id)) {
+    return next({ error: 400, message: "Invalid ID format" });
+  }
+  req.params.id = id; // ✅ Aseguramos que sea número
   next();
 };
 

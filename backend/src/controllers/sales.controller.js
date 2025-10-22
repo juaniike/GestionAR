@@ -6,19 +6,14 @@ const salesServices = require("../services/sales.service");
 
 const createSale = async (req, res, next) => {
   try {
-    const { items, paymentmethod, cashid } = req.body;
+    const { items, paymentmethod } = req.body;
     const userid = req.user.id;
 
     if (!items || items.length === 0) {
       return next({ error: 400, message: "No products provided" });
     }
 
-    const sale = await salesServices.createSale(
-      userid,
-      items,
-      paymentmethod,
-      cashid
-    );
+    const sale = await salesServices.createSale(userid, items, paymentmethod);
     res.status(201).json({ message: "Sale created successfully", sale });
   } catch (error) {
     next(error);
@@ -156,12 +151,16 @@ const getSoldProducts = async (req, res, next) => {
 };
 
 const getSaleItems = async (req, res, next) => {
-  const { id } = req.params;
-  const items = await SalesItem.findAll({
-    where: { saleid: id },
-    include: [Products],
-  });
-  res.json(items);
+  try {
+    const { id } = req.params;
+    const items = await SalesItem.findAll({
+      where: { saleid: id },
+      include: [Products],
+    });
+    res.json(items);
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {

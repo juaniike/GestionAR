@@ -33,14 +33,13 @@ const getAll = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    const { name, category, price, stock, minStock } = req.body;
-
+    const { name, category, price, stock, minstock } = req.body;
     const product = await productsServices.create({
       name,
       category,
       price,
       stock,
-      minStock,
+      minstock,
     });
     if (!product)
       return next({ error: 500, message: "Error creating product" });
@@ -66,9 +65,7 @@ const update = async (req, res, next) => {
 
 const destroy = async (req, res, next) => {
   try {
-    const deleted = await productsServices.destroy({
-      where: { id: req.params.id },
-    });
+    const deleted = await productsServices.destroy(req.params.id);
     if (!deleted) return next({ error: 404, message: "Product not found" });
     res.json({ message: "Product deleted successfully" });
   } catch (error) {

@@ -1,4 +1,4 @@
-// cash-card.js - VERSIÓN CORREGIDA (solo estado de caja)
+// cash-card.js - VERSIÓN ACTUALIZADA CON NUEVAS CLASES
 let isInitialized = false;
 let openCaja = null;
 
@@ -14,11 +14,32 @@ export async function initCashCard(user) {
   const btnCashAction = document.getElementById("btn-cash-action");
   const btnCashClose = document.getElementById("btn-cash-close");
   const progressBar = document.getElementById("cash-progress-bar");
+  const cashCard = document.querySelector(".card-summary.info");
 
-  if (!cashAmount || !cashStart || !cashStatus || !btnCashAction) {
+  if (!cashAmount || !cashStart || !cashStatus || !btnCashAction || !cashCard) {
     console.error("❌ Elementos de la cash card no encontrados");
     return;
   }
+
+  console.log("🎯 Cash Card inicializada");
+
+  // ✅ CONTROLADOR ÚNICO DE EVENTOS
+  function manejarClickBoton() {
+    const textoBoton = btnCashAction.textContent.trim();
+    console.log("🎯 Click en botón:", textoBoton);
+
+    if (textoBoton.includes("Abrir Caja")) {
+      abrirCaja();
+    } else if (textoBoton.includes("Registrar Venta")) {
+      abrirFormularioVenta();
+    } else if (textoBoton.includes("Reintentar")) {
+      checkCaja();
+    }
+  }
+
+  // ✅ ASIGNAR EVENTO AL BOTÓN PRINCIPAL
+  btnCashAction.addEventListener("click", manejarClickBoton);
+  console.log("✅ Evento asignado al botón principal");
 
   function formatTime(dateStr) {
     try {
@@ -38,6 +59,13 @@ export async function initCashCard(user) {
     cashStatus.textContent = " ";
     btnCashAction.disabled = true;
     if (btnCashClose) btnCashClose.disabled = true;
+
+    // Actualizar clases de estado
+    cashCard.classList.remove(
+      "cash-status-open",
+      "cash-status-closed",
+      "cash-status-error"
+    );
   }
 
   function showError(message = "Error al obtener el estado") {
@@ -46,7 +74,10 @@ export async function initCashCard(user) {
     cashStatus.innerHTML = `<span class="badge bg-danger">Error</span>`;
     btnCashAction.textContent = "Reintentar";
     btnCashAction.disabled = false;
-    btnCashAction.onclick = checkCaja;
+
+    // Actualizar clases de estado
+    cashCard.classList.remove("cash-status-open", "cash-status-closed");
+    cashCard.classList.add("cash-status-error");
 
     if (btnCashClose) {
       btnCashClose.classList.add("d-none");
@@ -55,12 +86,12 @@ export async function initCashCard(user) {
 
     if (progressBar) {
       progressBar.style.width = "0%";
-      progressBar.className = "progress-bar bg-danger";
+      progressBar.className = "progress-bar bg-danger cash-progress";
     }
   }
 
   function showSuccessState(data) {
-    console.log("🎯 Caja abierta - Mostrando estado");
+    console.log("✅ Caja ABIERTA - Configurando interfaz");
 
     openCaja = data;
     const startingCash = parseFloat(data.startingcash) || 0;
@@ -69,35 +100,44 @@ export async function initCashCard(user) {
     cashStart.textContent = `Iniciada: ${formatTime(data.starttime)}`;
     cashStatus.innerHTML = `<span class="badge bg-success">Abierta</span>`;
 
-    // ✅ SOLO CAMBIAR APARIENCIA, NO ASIGNAR EVENTOS
-    btnCashAction.textContent = "Registrar Venta";
-    btnCashAction.className = "btn btn-success btn-sm flex-grow-1";
-    btnCashAction.disabled = false;
+    // Actualizar clases de estado
+    cashCard.classList.remove("cash-status-closed", "cash-status-error");
+    cashCard.classList.add("cash-status-open");
 
-    console.log("✅ Estado de caja actualizado a 'Abierta'");
+    // BOTÓN PARA REGISTRAR VENTA
+    btnCashAction.textContent = "Registrar Venta";
+    btnCashAction.className =
+      "btn btn-success btn-sm flex-grow-1 cash-action-btn";
+    btnCashAction.disabled = false;
 
     if (btnCashClose) {
       btnCashClose.classList.remove("d-none");
       btnCashClose.disabled = false;
+      btnCashClose.onclick = cerrarCaja;
     }
 
     if (progressBar) {
       progressBar.style.width = "65%";
-      progressBar.className = "progress-bar bg-success";
+      progressBar.className = "progress-bar bg-success cash-progress";
     }
   }
 
   function showClosedState() {
-    console.log("🎯 Caja cerrada - Mostrando estado");
+    console.log("🔒 Caja CERRADA - Configurando interfaz");
 
     openCaja = null;
     cashAmount.textContent = "$0.00";
     cashStart.textContent = "Caja cerrada";
     cashStatus.innerHTML = `<span class="badge bg-danger">Cerrada</span>`;
 
-    // ✅ SOLO CAMBIAR APARIENCIA, NO ASIGNAR EVENTOS
+    // Actualizar clases de estado
+    cashCard.classList.remove("cash-status-open", "cash-status-error");
+    cashCard.classList.add("cash-status-closed");
+
+    // BOTÓN PARA ABRIR CAJA
     btnCashAction.textContent = "Abrir Caja";
-    btnCashAction.className = "btn btn-success btn-sm flex-grow-1";
+    btnCashAction.className =
+      "btn btn-success btn-sm flex-grow-1 cash-action-btn";
     btnCashAction.disabled = false;
 
     if (btnCashClose) {
@@ -107,8 +147,119 @@ export async function initCashCard(user) {
 
     if (progressBar) {
       progressBar.style.width = "0%";
-      progressBar.className = "progress-bar bg-info";
+      progressBar.className = "progress-bar bg-info cash-progress";
     }
+  }
+
+  // ✅ FUNCIÓN PARA ABRIR CAJA
+  async function abrirCaja() {
+    console.log("🔄 Abriendo caja...");
+
+    const monto = prompt("Ingrese monto inicial de la caja:");
+    if (!monto || isNaN(monto) || parseFloat(monto) < 0) {
+      alert("Por favor ingrese un monto válido mayor o igual a 0");
+      return;
+    }
+
+    btnCashAction.disabled = true;
+
+    try {
+      const res = await fetch("http://localhost:3000/cash-register/open", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ startingcash: parseFloat(monto) }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.message || `Error ${res.status} al abrir caja`
+        );
+      }
+
+      await res.json();
+      alert("✅ Caja abierta correctamente");
+      await checkCaja();
+    } catch (err) {
+      alert("❌ " + (err.message || "Error al abrir la caja"));
+      btnCashAction.disabled = false;
+    }
+  }
+
+  // ✅ FUNCIÓN PARA CERRAR CAJA
+  async function cerrarCaja() {
+    console.log("🔄 Cerrando caja...");
+
+    if (!openCaja) {
+      alert("No hay caja abierta actualmente");
+      return;
+    }
+
+    const monto = prompt("Ingrese monto final de la caja:");
+    if (!monto || isNaN(monto)) {
+      alert("Por favor ingrese un monto válido");
+      return;
+    }
+
+    if (btnCashClose) btnCashClose.disabled = true;
+
+    try {
+      const res = await fetch(
+        `http://localhost:3000/cash-register/${openCaja.id}/close`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: JSON.stringify({ endingcash: parseFloat(monto) }),
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.message || `Error ${res.status} al cerrar caja`
+        );
+      }
+
+      await res.json();
+      alert("✅ Caja cerrada correctamente");
+      await checkCaja();
+    } catch (err) {
+      alert("❌ " + (err.message || "Error al cerrar la caja"));
+    } finally {
+      if (btnCashClose) btnCashClose.disabled = false;
+    }
+  }
+
+  // ✅ FUNCIÓN MEJORADA PARA ABRIR FORMULARIO DE VENTA
+  function abrirFormularioVenta() {
+    console.log("📋 Abriendo formulario de venta...");
+
+    const ventaForm = document.getElementById("venta-form");
+
+    if (!ventaForm) {
+      console.error("❌ Formulario no encontrado");
+      alert("Error: Recarga la página para cargar el formulario.");
+      return;
+    }
+
+    console.log("✅ Formulario encontrado, mostrando...");
+
+    if (!cashStatus.textContent.includes("Abierta")) {
+      alert("La caja está cerrada. Ábrala antes de registrar una venta.");
+      return;
+    }
+
+    // ✅ USAR NUEVAS CLASES CSS
+    ventaForm.classList.remove("venta-form-overlay--hidden");
+    ventaForm.classList.add("venta-form-overlay--visible");
+
+    console.log("✅ Formulario mostrado con nuevas clases CSS");
   }
 
   async function checkCaja() {

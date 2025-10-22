@@ -1,6 +1,6 @@
-/* Estilos página LOGIN */
+/* ================= ESTILOS GENERALES Y LOGIN ================= */
 
-/* Sticky footer para dashboard */
+/* Layout principal con sticky footer */
 body {
   background-color: #f5f5f5;
   display: flex;
@@ -16,7 +16,7 @@ footer.footer {
   padding: 15px 0;
 }
 
-/* H1 GestionAR */
+/* Logo principal - Sin !important */
 .logo-gestionar {
   font-family: "Montserrat", sans-serif;
   font-weight: 800;
@@ -34,11 +34,12 @@ footer.footer {
   transform: scale(1.01);
 }
 
+/* Parte "AR" en verde */
 .logo-ar {
   color: #28a745;
 }
 
-/* Formulario Login */
+/* Formulario de login */
 .form-border {
   border: 2px solid #28a745;
   border-radius: 15px;
@@ -46,7 +47,7 @@ footer.footer {
   background-color: #fff;
 }
 
-/* Botón verde */
+/* Botón de login con efectos */
 .btn-login {
   background-color: #28a745;
   border-color: #28a745;
@@ -55,25 +56,27 @@ footer.footer {
 }
 
 .btn-login:hover {
-  color: white;
   background-color: #218838;
   border-color: #1e7e34;
   transform: translateY(-2px) scale(1.01);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Centrar verticalmente en toda la página */
+/* Centrado vertical en login */
 .page-header .row {
   min-height: 100vh;
   align-items: center;
 }
 
-/* Ajuste para input focus */
+/* Focus en inputs */
 .input-group-outline .form-control:focus {
-  border-color: #28a745 rgba(40, 167, 69, 0.25);
+  border-color: #28a745;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
 }
 
-/* Desktop: separar main del sidebar */
+/* ================= LAYOUT RESPONSIVE ================= */
+
+/* Desktop: Sidebar fijo */
 @media (min-width: 992px) {
   main.main-content {
     margin-left: 250px;
@@ -81,25 +84,22 @@ footer.footer {
   }
 }
 
-/* Mobile: agregar margen al form */
+/* Mobile: Espaciado en formularios */
 @media (max-width: 991px) {
   .card.form-border {
     margin: 20px;
   }
 }
 
-/* ================= ESTILOS DASHBOARD ================= */
+/* ================= DASHBOARD Y COMPONENTES ================= */
 
-/* Sidenav */
+/* Sidebar navigation */
 .sidenav-header {
   padding: 1rem 0;
   text-align: center;
 }
 
-.sidenav-header .col-lg-6 {
-  width: 100%;
-}
-
+/* Logo en sidebar */
 .gestionar-sidenav {
   font-family: "Montserrat", sans-serif;
   font-weight: 800;
@@ -114,12 +114,8 @@ footer.footer {
   color: #28a745;
 }
 
-.sidenav-header .gestionar-sidenav {
-  color: #f8f9fa;
-}
-
-/* Navbar */
-.nav-item.d-flex.align-items-center a.nav-link {
+/* Items de navegación */
+.nav-item.d-flex.align-items-center .nav-link {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -139,22 +135,25 @@ footer.footer {
   padding: 1rem 1.5rem;
 }
 
+.card-summary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
+
 .card-summary p {
   font-size: 0.95rem;
   color: #777;
   letter-spacing: 0.5px;
   margin-bottom: 0.5rem;
-  word-break: break-word;
 }
 
 .card-summary h5 {
   font-size: 1.6rem;
   font-weight: 600;
   margin-top: 0;
-  word-break: break-word;
 }
 
-/* Iconos */
+/* Iconos en cards */
 .card-summary i {
   font-size: 36px;
   padding: 12px;
@@ -162,14 +161,367 @@ footer.footer {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Para el gráfico que ocupa 2 columnas */
+/* Gráficos - Solo !important necesario para sobrescribir librerías externas */
 .card-summary canvas {
   width: 100% !important;
   height: 200px !important;
 }
 
-/* Responsive */
+/* ================= FORMULARIO DE VENTAS - SIN !IMPORTANT ================= */
+
+/* Overlay principal - Solo !important necesario para position fixed */
+.venta-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  z-index: 1050; /* Z-index estándar para modales */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  padding: 10px;
+}
+
+/* Estados del overlay */
+.venta-form-overlay--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.venta-form-overlay--hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Contenido del formulario */
+.venta-form-content {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+  max-width: 85vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.venta-form-overlay--visible .venta-form-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* Header del formulario */
+.venta-form-header {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  padding: 2.5rem 3rem;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.venta-form-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  letter-spacing: -0.5px;
+}
+
+/* Botón cerrar */
+.venta-form-close {
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.venta-form-close:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* Cuerpo del formulario */
+.venta-form-body {
+  padding: 1rem;
+}
+
+/* Secciones del formulario */
+.venta-form-section {
+  background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+  border-left: 6px solid #28a745;
+}
+
+.venta-form-section-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2b3a42;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Input de cliente */
+.venta-form-cliente {
+  width: 100%;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  background-color: white;
+  color: #495057;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.venta-form-cliente:focus {
+  border-color: #28a745;
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Filas de productos */
+.venta-form-producto-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 16px;
+  border-left: 6px solid #28a745;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.venta-form-producto-row:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Inputs de productos */
+.venta-form-input {
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  background-color: white;
+  color: #495057;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  font-weight: 500;
+  height: 56px;
+}
+
+.venta-form-input:focus {
+  border-color: #28a745;
+  box-shadow: 0 3px 20px rgba(40, 167, 69, 0.25);
+  transform: translateY(-3px);
+}
+
+/* Grupos de inputs con labels */
+.venta-form-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.venta-form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+/* Botón eliminar fila */
+.venta-form-remove-btn {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+  margin-bottom: 0.5rem;
+}
+
+.venta-form-remove-btn:hover {
+  transform: scale(1.15) rotate(90deg);
+  box-shadow: 0 10px 25px rgba(220, 53, 69, 0.5);
+}
+
+/* Botón agregar producto */
+.venta-form-add-btn {
+  background: transparent;
+  border: 3px dashed #28a745;
+  color: #28a745;
+  font-weight: 700;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  background-color: rgba(40, 167, 69, 0.05);
+}
+
+.venta-form-add-btn:hover {
+  background: #28a745;
+  color: white;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(40, 167, 69, 0.4);
+  border-style: solid;
+}
+
+/* Sección total y método de pago */
+.venta-form-total-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  margin: 2.5rem 0;
+}
+
+.venta-form-total-group,
+.venta-form-metodo-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.venta-form-total-label,
+.venta-form-metodo-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2b3a42;
+  margin-bottom: 0;
+}
+
+.venta-form-total {
+  font-weight: 800;
+  font-size: 2.5rem;
+  color: #28a745;
+  text-align: center;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  border: 3px solid #e9ecef;
+}
+
+/* Select de método de pago */
+.venta-form-metodo {
+  width: 100%;
+  padding: 1.2rem 1.5rem;
+  border: 2px solid #28a745;
+  border-radius: 12px;
+  background-color: white;
+  color: #495057;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  height: 56px;
+}
+
+.venta-form-metodo:focus {
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Checkbox */
+.venta-form-check {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border-left: 4px solid #28a745;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.venta-form-check-input {
+  transform: scale(1.4);
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.venta-form-check-label {
+  color: #495057;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* Botón confirmar venta */
+.venta-form-submit {
+  padding: 1.5rem 3rem;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.3rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 30px rgba(40, 167, 69, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.venta-form-submit:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 40px rgba(40, 167, 69, 0.6);
+}
+
+/* ================= RESPONSIVE MEJORADO ================= */
+
 @media (max-width: 768px) {
+  /* Dashboard mobile */
   .card-summary {
     padding: 0.8rem 1rem;
   }
@@ -181,245 +533,44 @@ footer.footer {
   .card-summary p {
     font-size: 0.9rem;
   }
-}
 
-/* ================= ESTILOS FORMULARIO DE VENTAS ================= */
-
-/* Overlay principal */
-#venta-form.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
-  z-index: 1050;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-#venta-form.overlay.show {
-  opacity: 1;
-}
-
-/* Contenido del formulario */
-#venta-form .overlay-content {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  width: 90%;
-  max-width: 700px;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  transform: translateY(-20px);
-  transition: transform 0.3s ease;
-}
-
-#venta-form.overlay.show .overlay-content {
-  transform: translateY(0);
-}
-
-/* Header profesional */
-#venta-form .overlay-header {
-  background: linear-gradient(135deg, #28a745, #20c997);
-  color: white;
-  padding: 1.5rem;
-  border-radius: 12px 12px 0 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-#venta-form .overlay-header h4 {
-  margin: 0;
-  font-weight: 600;
-  font-size: 1.5rem;
-}
-
-#venta-form #close-form {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: white;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-#venta-form #close-form:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
-}
-
-/* Cuerpo del formulario */
-#venta-form .overlay-body {
-  padding: 1.5rem;
-}
-
-/* Filas de productos */
-#venta-form .producto-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #28a745;
-}
-
-/* Inputs dentro de filas */
-#venta-form .producto-row input {
-  flex: 1;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  padding: 8px 12px;
-  background-color: white;
-  color: #495057;
-}
-
-/* Botón eliminar fila */
-#venta-form .btn-remove-row {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-#venta-form .btn-remove-row:hover {
-  background-color: #c82333;
-}
-
-/* Botón agregar producto */
-#venta-form #add-product {
-  background: transparent;
-  border: 2px dashed #28a745;
-  color: #28a745;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  width: 100%;
-  margin-bottom: 1.5rem;
-  padding: 0.75rem;
-}
-
-#venta-form #add-product:hover {
-  background: #28a745;
-  color: white;
-  transform: translateY(-1px);
-}
-
-/* Sección total y método de pago */
-#venta-form .total-metodo {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin: 1.5rem 0;
-  padding: 1.25rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-#venta-form #total-venta {
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: #28a745;
-}
-
-#venta-form select#metodo {
-  min-width: 150px;
-  padding: 8px 12px;
-  border: 1px solid #28a745;
-  border-radius: 6px;
-  background-color: white;
-  color: #495057;
-}
-
-/* Sección cliente */
-#venta-form #cliente {
-  width: 100%;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  padding: 8px 12px;
-  background-color: white;
-  color: #495057;
-  margin-bottom: 10px;
-}
-
-#venta-form .form-check {
-  margin-top: 10px;
-}
-
-#venta-form .form-check-input {
-  accent-color: #28a745;
-}
-
-#venta-form .form-check-label {
-  color: #495057;
-  font-weight: 500;
-}
-
-/* Botón confirmar venta */
-#venta-form #submit-venta {
-  padding: 10px 20px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-#venta-form #submit-venta:hover {
-  background-color: #218838;
-  transform: translateY(-1px);
-}
-
-/* Material icons alignment */
-.material-icons.align-middle {
-  vertical-align: middle;
-  line-height: 1;
-}
-
-/* ================= RESPONSIVE ================= */
-
-@media (max-width: 768px) {
-  #venta-form .producto-row {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  #venta-form .total-metodo {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  #venta-form .overlay-content {
-    width: 95%;
+  /* Formulario mobile */
+  .venta-form-content {
+    width: 98%;
     margin: 1rem;
+    max-height: 95vh;
   }
 
-  #venta-form select#metodo {
-    min-width: 100%;
+  .venta-form-body {
+    padding: 2rem;
+  }
+
+  .venta-form-header {
+    padding: 2rem;
+  }
+
+  .venta-form-title {
+    font-size: 1.6rem;
+  }
+
+  .venta-form-producto-row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .venta-form-total-section {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .venta-form-section {
+    padding: 2rem;
+  }
+
+  .venta-form-total {
+    font-size: 2rem;
+    padding: 1.2rem;
   }
 }
 
@@ -434,4 +585,97 @@ footer.footer {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ================= UTILIDADES ================= */
+
+/* Alineación de iconos material */
+.material-icons.align-middle {
+  vertical-align: middle;
+  line-height: 1;
+  font-size: 1.4rem;
+}
+
+/* Scroll personalizado */
+.venta-form-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.venta-form-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.venta-form-content::-webkit-scrollbar-thumb {
+  background: #28a745;
+  border-radius: 10px;
+}
+
+.venta-form-content::-webkit-scrollbar-thumb:hover {
+  background: #218838;
+}
+
+/* ================= ESTILOS CAJA REGISTRADORA ================= */
+
+/* Botones de caja - SIN !important */
+.cash-action-btn {
+  background-color: #28a745;
+  border-color: #28a745;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.cash-action-btn:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-1px);
+}
+
+.cash-close-btn {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.cash-close-btn:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  transform: translateY(-1px);
+}
+
+/* Barra de progreso */
+.cash-progress {
+  transition: width 0.5s ease;
+}
+
+/* Estados de la caja */
+.cash-status-open .cash-progress {
+  background-color: #28a745;
+  width: 65%;
+}
+
+.cash-status-closed .cash-progress {
+  background-color: #6c757d;
+  width: 0%;
+}
+
+.cash-status-error .cash-progress {
+  background-color: #dc3545;
+  width: 0%;
+}
+
+/* Card de caja con mejor especificidad */
+.card-summary.info {
+  position: relative;
+  z-index: 5;
+}
+
+.card-summary.info .card-body {
+  position: relative;
+  z-index: 6;
 }

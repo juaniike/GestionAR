@@ -5,7 +5,7 @@ const getById = async (id) => {
 };
 
 const getByBarcode = async (barcode) => {
-  return await Products.findByPk({ where: { barcode } });
+  return await Products.findOne({ where: { barcode } });
 };
 
 const getAll = async () => {
@@ -23,11 +23,12 @@ const update = async (id, body) => {
 };
 
 const destroy = async (id) => {
-  return await Products.destroy(id);
+  return await Products.destroy({ where: { id } });
 };
 
 module.exports = {
   getById,
+  getByBarcode,
   getAll,
   create,
   update,

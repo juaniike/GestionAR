@@ -21,7 +21,11 @@ router.get(
   authRole(["owner"]),
   salesController.getDailyReport
 );
-router.post("/discount", salesController.applyDiscount);
+router.post(
+  "/discount",
+  authRole(["owner", "employee"]),
+  salesController.applyDiscount
+);
 
 /*Ticket y cancelación */
 router.get("/:id/ticket", salesController.generateTicket);
@@ -34,6 +38,10 @@ router.patch(
   authRole(["owner"]),
   salesController.updateSaleItem
 );
-router.get("/report/sold", salesController.getSoldProducts);
+router.get(
+  "/report/sold",
+  authRole(["owner", "employee"]),
+  salesController.getSoldProducts
+);
 
 module.exports = router;
