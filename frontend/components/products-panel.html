@@ -1,0 +1,289 @@
+<!-- components/products-panel.html -->
+<div class="container-fluid py-4" id="products-panel-container">
+  <!-- Header con botón agregar -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div
+          class="card-header pb-0 d-flex justify-content-between align-items-center"
+        >
+          <div>
+            <h5>Gestión de Productos</h5>
+            <p class="text-sm mb-0">Administra tu inventario de productos</p>
+          </div>
+          <button id="btn-add-product" class="btn btn-success btn-sm">
+            <i class="material-icons me-1">add</i>
+            Agregar Producto
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjetas resumen -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-sm-6 mb-4">
+      <div class="card card-summary info">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p>Total Productos</p>
+              <h5 id="total-products">0</h5>
+            </div>
+            <i class="material-icons text-info">inventory_2</i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6 mb-4">
+      <div class="card card-summary danger">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p>Stock Bajo</p>
+              <h5 id="low-stock-count">0</h5>
+            </div>
+            <i class="material-icons text-danger">warning</i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6 mb-4">
+      <div class="card card-summary warning">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p>Sin Stock</p>
+              <h5 id="out-of-stock-count">0</h5>
+            </div>
+            <i class="material-icons text-warning">cancel</i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6 mb-4">
+      <div class="card card-summary success">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p>Valor Inventario</p>
+              <h5 id="inventory-value">$0</h5>
+            </div>
+            <i class="material-icons text-success">attach_money</i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de productos -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div
+            class="d-flex justify-content-between align-items-center flex-wrap gap-2"
+          >
+            <div>
+              <h6>Lista de Productos</h6>
+              <p class="text-sm mb-0" id="table-info">Cargando productos...</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <div
+                class="input-group input-group-outline"
+                style="min-width: 200px"
+              >
+                <input
+                  type="text"
+                  id="search-products"
+                  class="form-control"
+                  placeholder="Buscar productos..."
+                />
+              </div>
+              <select
+                id="filter-category"
+                class="form-select"
+                style="min-width: 150px"
+              >
+                <option value="">Todas las categorías</option>
+              </select>
+              <select
+                id="filter-stock"
+                class="form-select"
+                style="min-width: 140px"
+              >
+                <option value="">Todo el stock</option>
+                <option value="low">Stock Bajo</option>
+                <option value="out">Sin Stock</option>
+                <option value="normal">Stock Normal</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Producto
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2"
+                  >
+                    Categoría
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Código
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Precio
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Stock
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Mínimo
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Estado
+                  </th>
+                  <th class="text-secondary opacity-7">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="products-table-body">
+                <tr>
+                  <td colspan="8" class="text-center py-4">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Cargando...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Formulario Producto -->
+<div class="modal fade" id="product-form-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="product-modal-title">Agregar Producto</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="product-form">
+          <input type="hidden" id="product-id" />
+          <div class="row">
+            <div class="col-md-6">
+              <div class="input-group input-group-outline my-3">
+                <label class="form-label">Nombre del Producto</label>
+                <input
+                  type="text"
+                  id="product-name"
+                  class="form-control"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-outline my-3">
+                <label class="form-label">Categoría</label>
+                <input type="text" id="product-category" class="form-control" />
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="input-group input-group-outline my-3">
+                <label class="form-label">Código de Barras</label>
+                <input type="text" id="product-barcode" class="form-control" />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-outline my-3">
+                <label class="form-label">Precio de Venta</label>
+                <input
+                  type="number"
+                  id="product-price"
+                  class="form-control"
+                  step="0.01"
+                  min="0"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="input-group input-group-outline my-3">
+                <label class="form-label">Costo</label>
+                <input
+                  type="number"
+                  id="product-cost"
+                  class="form-control"
+                  step="0.01"
+                  min="0"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group input-group-outline my-3">
+                <label class="form-label">Stock Actual</label>
+                <input
+                  type="number"
+                  id="product-stock"
+                  class="form-control"
+                  min="0"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group input-group-outline my-3">
+                <label class="form-label">Stock Mínimo</label>
+                <input
+                  type="number"
+                  id="product-minstock"
+                  class="form-control"
+                  min="1"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-success" id="save-product">
+          Guardar Producto
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
