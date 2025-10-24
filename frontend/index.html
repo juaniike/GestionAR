@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="./assets/img/apple-icon.png"
+    />
+    <link rel="icon" type="image/png" href="./assets/img/favicon.png" />
+    <title>GestionAR - Sistema de Gestión</title>
+
+    <!-- Fonts & CSS -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700"
+    />
+    <link href="./assets/css/material-dashboard.css" rel="stylesheet" />
+
+    <!-- Material Icons -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="g-sidenav-show bg-gray-200">
+    <!-- Sidenav -->
+    <div id="sidenav-container"></div>
+
+    <!-- Main Content -->
+    <main
+      class="main-content position-relative max-height-vh-100 h-100 border-radius-lg"
+    >
+      <!-- Navbar -->
+      <div id="navbar-container"></div>
+
+      <!-- Contenedor Dinámico de Vistas -->
+      <div id="view-container">
+        <!-- Aquí se cargarán dinámicamente las vistas -->
+        <div class="container-fluid py-4" id="dashboard-view">
+          <!-- Dashboard se carga por defecto -->
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div id="footer-container"></div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="./assets/js/core/popper.min.js"></script>
+    <script src="./assets/js/core/bootstrap.min.js"></script>
+    <script src="./assets/js/plugins/perfect-scrollbar.min.js"></script>
+    <script src="./assets/js/plugins/smooth-scrollbar.min.js"></script>
+    <script src="./assets/js/plugins/chartjs.min.js"></script>
+
+    <!-- Control Center: Material Dashboard -->
+    <script src="./assets/js/material-dashboard.min.js"></script>
+
+    <!-- Nuestra App -->
+    <script type="module" src="./assets/js/dashboard.js"></script>
+  </body>
+</html>

@@ -1,5 +1,3 @@
-// assets/js/stock-card.js - MÓDULO PARA LA TARJETA DE STOCK
-
 class StockCard {
   constructor() {
     this.selectors = {
@@ -198,5 +196,4 @@ export async function initStockCard() {
   }
 }
 
-// Exportar la clase por si se necesita
 export default StockCard;
