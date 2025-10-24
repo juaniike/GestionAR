@@ -7,6 +7,7 @@ const validateProduct = (req, res, next) => {
     name: Joi.string().required(),
     category: Joi.string().required(),
     price: Joi.number().min(0).required(),
+    cost: Joi.number().min(0).required(), // ✅ AGREGAR ESTA LÍNEA
     stock: Joi.number().integer().min(0).required(),
     minstock: Joi.number().integer().min(0).required(),
   });

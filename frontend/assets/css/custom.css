@@ -167,357 +167,343 @@ footer.footer {
   height: 200px !important;
 }
 
-/* ================= FORMULARIO DE VENTAS - SIN !IMPORTANT ================= */
+/* ================= FORMULARIO DE VENTAS  ================= */
 
-/* Overlay principal - Solo !important necesario para position fixed */
+/* Estilos mejorados para el modal de ventas */
 .venta-form-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
-  z-index: 1050; /* Z-index estándar para modales */
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  padding: 10px;
-}
-
-/* Estados del overlay */
-.venta-form-overlay--visible {
+  z-index: 9999;
+  padding: 20px;
   opacity: 1;
-  visibility: visible;
+  transition: opacity 0.3s ease;
 }
 
 .venta-form-overlay--hidden {
   opacity: 0;
-  visibility: hidden;
+  pointer-events: none;
 }
 
-/* Contenido del formulario */
 .venta-form-content {
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
-  max-width: 85vw;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
-  position: relative;
-  transform: scale(0.9) translateY(20px);
-  opacity: 0;
-  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-.venta-form-overlay--visible .venta-form-content {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-}
-
-/* Header del formulario */
 .venta-form-header {
-  background: linear-gradient(135deg, #28a745, #20c997);
-  color: white;
-  padding: 2.5rem 3rem;
-  border-radius: 20px 20px 0 0;
+  padding: 20px 24px 0;
+  border-bottom: 1px solid #e9ecef;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 3px solid rgba(255, 255, 255, 0.2);
 }
 
 .venta-form-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #344767;
   margin: 0;
-  font-weight: 700;
-  font-size: 2rem;
   display: flex;
   align-items: center;
-  gap: 15px;
-  letter-spacing: -0.5px;
+  gap: 8px;
 }
 
-/* Botón cerrar */
 .venta-form-close {
-  background: rgba(255, 255, 255, 0.25);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6c757d;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
+  transition: color 0.2s;
 }
 
 .venta-form-close:hover {
-  background: rgba(255, 255, 255, 0.4);
-  transform: rotate(90deg) scale(1.1);
+  color: #495057;
 }
 
-/* Cuerpo del formulario */
 .venta-form-body {
-  padding: 1rem;
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* Secciones del formulario */
 .venta-form-section {
-  background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
-  border-radius: 16px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #e9ecef;
-  border-left: 6px solid #28a745;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
 }
 
 .venta-form-section-title {
-  font-size: 1.4rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #2b3a42;
-  margin-bottom: 1.5rem;
+  color: #344767;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* Input de cliente */
-.venta-form-cliente {
-  width: 100%;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  padding: 1.2rem 1.5rem;
-  background-color: white;
-  color: #495057;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  font-weight: 500;
-}
-
-.venta-form-cliente:focus {
-  border-color: #28a745;
-  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.25);
-  transform: translateY(-2px);
-}
-
-/* Filas de productos */
-.venta-form-producto-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: 1rem;
-  align-items: end;
-  margin-bottom: 2rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  border-radius: 16px;
-  border-left: 6px solid #28a745;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-}
-
-.venta-form-producto-row:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-}
-
-/* Inputs de productos */
-.venta-form-input {
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 1rem 1.2rem;
-  background-color: white;
-  color: #495057;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  font-weight: 500;
-  height: 56px;
-}
-
-.venta-form-input:focus {
-  border-color: #28a745;
-  box-shadow: 0 3px 20px rgba(40, 167, 69, 0.25);
-  transform: translateY(-3px);
-}
-
-/* Grupos de inputs con labels */
 .venta-form-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 16px;
 }
 
 .venta-form-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #6c757d;
-  margin-bottom: 0;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 8px;
 }
 
-/* Botón eliminar fila */
-.venta-form-remove-btn {
-  width: 56px;
-  height: 56px;
+.venta-form-cliente,
+.venta-form-metodo,
+.producto-select,
+.producto-cantidad,
+.producto-precio {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d2d6da;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.venta-form-cliente:focus,
+.venta-form-metodo:focus,
+.producto-select:focus,
+.producto-cantidad:focus,
+.producto-precio:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+  outline: none;
+}
+
+.venta-form-check {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #dc3545, #c82333);
+  gap: 8px;
+}
+
+.venta-form-check-input {
+  width: 16px;
+  height: 16px;
+}
+
+.venta-form-check-label {
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+#productos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.producto-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.producto-select,
+.producto-cantidad,
+.producto-precio {
+  flex: 1;
+}
+
+.producto-remove {
+  background: #e74c3c;
   color: white;
   border: none;
-  cursor: pointer;
-  font-size: 1.5rem;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
-  margin-bottom: 0.5rem;
-}
-
-.venta-form-remove-btn:hover {
-  transform: scale(1.15) rotate(90deg);
-  box-shadow: 0 10px 25px rgba(220, 53, 69, 0.5);
-}
-
-/* Botón agregar producto */
-.venta-form-add-btn {
-  background: transparent;
-  border: 3px dashed #28a745;
-  color: #28a745;
-  font-weight: 700;
-  font-size: 1.2rem;
-  transition: all 0.3s ease;
-  width: 100%;
-  margin-bottom: 2.5rem;
-  padding: 1.5rem;
-  border-radius: 16px;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
   cursor: pointer;
-  background-color: rgba(40, 167, 69, 0.05);
+  transition: background 0.2s;
+}
+
+.producto-remove:hover {
+  background: #c0392b;
+}
+
+.venta-form-add-btn {
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .venta-form-add-btn:hover {
-  background: #28a745;
-  color: white;
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(40, 167, 69, 0.4);
-  border-style: solid;
+  background: #43a047;
 }
 
-/* Sección total y método de pago */
 .venta-form-total-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin: 2.5rem 0;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .venta-form-total-group,
 .venta-form-metodo-group {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  flex: 1;
+  min-width: 200px;
 }
 
 .venta-form-total-label,
 .venta-form-metodo-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2b3a42;
-  margin-bottom: 0;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 8px;
 }
 
 .venta-form-total {
-  font-weight: 800;
-  font-size: 2.5rem;
-  color: #28a745;
-  text-align: center;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  border: 3px solid #e9ecef;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4caf50;
 }
 
-/* Select de método de pago */
-.venta-form-metodo {
-  width: 100%;
-  padding: 1.2rem 1.5rem;
-  border: 2px solid #28a745;
-  border-radius: 12px;
-  background-color: white;
-  color: #495057;
-  font-size: 1.1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  height: 56px;
+.venta-form-submit-section {
+  display: flex;
+  justify-content: flex-end;
 }
 
-.venta-form-metodo:focus {
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-  transform: translateY(-2px);
-}
-
-/* Checkbox */
-.venta-form-check {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: white;
-  border-radius: 12px;
-  border-left: 4px solid #28a745;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-}
-
-.venta-form-check-input {
-  transform: scale(1.4);
-  margin-right: 15px;
-  cursor: pointer;
-}
-
-.venta-form-check-label {
-  color: #495057;
-  font-weight: 600;
-  font-size: 1.1rem;
-  cursor: pointer;
-}
-
-/* Botón confirmar venta */
 .venta-form-submit {
-  padding: 1.5rem 3rem;
-  background: linear-gradient(135deg, #28a745, #20c997);
+  background: #4caf50;
   color: white;
   border: none;
-  border-radius: 16px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 1.3rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 30px rgba(40, 167, 69, 0.4);
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .venta-form-submit:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 15px 40px rgba(40, 167, 69, 0.6);
+  background: #43a047;
 }
 
+@media (max-width: 768px) {
+  .venta-form-content {
+    max-width: 95%;
+  }
+
+  .venta-form-total-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .producto-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Mejoras para el formulario de ventas */
+/* En custom.css - agregar estas clases */
+.producto-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  margin-bottom: 8px;
+}
+
+.producto-subtotal {
+  font-weight: 600;
+  color: #4caf50;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.producto-remove {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.producto-remove:hover {
+  background: #c0392b;
+}
+
+/* Estados de stock en los options */
+.option-low-stock {
+  color: #e67e22;
+  font-weight: 500;
+}
+
+.option-no-stock {
+  color: #95a5a6;
+  text-decoration: line-through;
+}
+
+/* Mejoras responsive */
+@media (max-width: 768px) {
+  .producto-item {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .producto-subtotal {
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .producto-remove {
+    width: 100%;
+    height: 40px;
+  }
+}
 /* ================= RESPONSIVE MEJORADO ================= */
 
 @media (max-width: 768px) {

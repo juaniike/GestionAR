@@ -1,6 +1,7 @@
 import { initCards } from "./dashboard-cards.js";
 import { initSalesForm } from "./sales-form.js";
 import { initCashCard } from "./cash-card.js";
+import { initStockCard } from "./stock-card.js"; // ✅ NUEVO IMPORT
 
 function getUserWithToken() {
   try {
@@ -27,6 +28,33 @@ async function loadComponent(id, url) {
   }
 }
 
+// ✅ FUNCIÓN PARA INICIALIZAR MATERIAL DASHBOARD SIN CONFLICTOS
+function initializeMaterialDashboard() {
+  if (typeof materialDashboard !== "undefined") {
+    console.log("🎨 Inicializando Material Dashboard...");
+
+    // Solo inicializar tooltips, dejar que Material Dashboard maneje el resto
+    const tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    console.log("✅ Material Dashboard inicializado");
+  } else {
+    console.warn("⚠️ Material Dashboard no disponible");
+  }
+}
+
+// ✅ FUNCIÓN PARA ACTUALIZAR STOCK CARD DESDE OTROS MÓDULOS
+window.refreshStockCard = async function () {
+  if (window.stockCard && typeof window.stockCard.refresh === "function") {
+    await window.stockCard.refresh();
+    console.log("🔄 Stock card actualizada desde dashboard");
+  }
+};
+
 window.addEventListener("DOMContentLoaded", async () => {
   const user = getUserWithToken();
 
@@ -46,10 +74,21 @@ window.addEventListener("DOMContentLoaded", async () => {
     loadComponent("footer-container", "components/footer.html"),
   ]);
 
-  // Inicializar todas las cards (EXCEPTO cash-card)
+  // Inicializar Material Dashboard
+  initializeMaterialDashboard();
+
+  // Inicializar todas las cards
   await initCards();
   await initSalesForm();
 
-  // Inicializar cash card (solo una vez)
-  initCashCard(user);
+  // ✅ INICIALIZAR STOCK CARD
+  await initStockCard();
+
+  // Inicializar cash card
+  await initCashCard(user);
+
+  console.log("✅ Dashboard completamente inicializado");
 });
+
+// ❌ ELIMINAR estas líneas (se moverán a products.js)
+// Ya no van aquí porque pertenecen al módulo de productos

@@ -1,4 +1,4 @@
-// cash-card.js - VERSIÓN ACTUALIZADA CON NUEVAS CLASES
+// cash-card.js - VERSIÓN CORREGIDA
 let isInitialized = false;
 let openCaja = null;
 
@@ -236,30 +236,24 @@ export async function initCashCard(user) {
     }
   }
 
-  // ✅ FUNCIÓN MEJORADA PARA ABRIR FORMULARIO DE VENTA
+  // En cash-card.js - mantener esta función igual
   function abrirFormularioVenta() {
     console.log("📋 Abriendo formulario de venta...");
-
-    const ventaForm = document.getElementById("venta-form");
-
-    if (!ventaForm) {
-      console.error("❌ Formulario no encontrado");
-      alert("Error: Recarga la página para cargar el formulario.");
-      return;
-    }
-
-    console.log("✅ Formulario encontrado, mostrando...");
 
     if (!cashStatus.textContent.includes("Abierta")) {
       alert("La caja está cerrada. Ábrala antes de registrar una venta.");
       return;
     }
 
-    // ✅ USAR NUEVAS CLASES CSS
-    ventaForm.classList.remove("venta-form-overlay--hidden");
-    ventaForm.classList.add("venta-form-overlay--visible");
-
-    console.log("✅ Formulario mostrado con nuevas clases CSS");
+    // ✅ LLAMAR FUNCIÓN GLOBAL
+    if (typeof window.mostrarFormularioVentas === "function") {
+      window.mostrarFormularioVentas();
+    } else {
+      console.error("❌ Función de formulario de ventas no disponible");
+      alert(
+        "Error: El formulario de ventas no está cargado. Recarga la página."
+      );
+    }
   }
 
   async function checkCaja() {
@@ -319,3 +313,13 @@ export async function initCashCard(user) {
 
   await checkCaja();
 }
+
+// En cash-card.js - agregar esta función
+export async function recargarEstadoCaja() {
+  if (typeof checkCaja === "function") {
+    await checkCaja();
+  }
+}
+
+// Hacer disponible globalmente
+window.recargarEstadoCaja = recargarEstadoCaja;

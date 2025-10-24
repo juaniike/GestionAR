@@ -33,13 +33,15 @@ const getAll = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    const { name, category, price, stock, minstock } = req.body;
+    const { name, category, price, cost, stock, minstock, barcode } = req.body;
     const product = await productsServices.create({
       name,
       category,
       price,
+      cost,
       stock,
       minstock,
+      barcode,
     });
     if (!product)
       return next({ error: 500, message: "Error creating product" });
