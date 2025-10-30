@@ -28,21 +28,6 @@ async function loadComponent(id, url) {
   }
 }
 
-function initializeMaterialDashboard() {
-  if (typeof materialDashboard !== "undefined") {
-    console.log("🎨 Inicializando Material Dashboard...");
-    const tooltipTriggerList = [].slice.call(
-      document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    );
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-    console.log("✅ Material Dashboard inicializado");
-  } else {
-    console.warn("⚠️ Material Dashboard no disponible");
-  }
-}
-
 // ✅ FUNCIÓN PARA INICIALIZAR MATERIAL DASHBOARD SIN CONFLICTOS
 function initializeMaterialDashboard() {
   if (typeof materialDashboard !== "undefined") {
