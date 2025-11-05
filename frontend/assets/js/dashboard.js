@@ -93,8 +93,5 @@ window.addEventListener("DOMContentLoaded", async () => {
   // ✅ INICIALIZAR STOCK CARD
   await initStockCard();
 
-  // Inicializar cash card
-  await initCashCard(user);
-
   console.log("✅ Dashboard completamente inicializado");
 });

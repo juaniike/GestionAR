@@ -1,4 +1,4 @@
-// cash-card.js - VERSIÓN CORREGIDA
+// cash-card.js - VERSIÓN SIMPLIFICADA PARA DASHBOARD
 let isInitialized = false;
 let openCaja = null;
 
@@ -13,7 +13,6 @@ export async function initCashCard(user) {
   const cashStatus = document.getElementById("cash-status");
   const btnCashAction = document.getElementById("btn-cash-action");
   const btnCashClose = document.getElementById("btn-cash-close");
-  const progressBar = document.getElementById("cash-progress-bar");
   const cashCard = document.querySelector(".card-summary.info");
 
   if (!cashAmount || !cashStart || !cashStatus || !btnCashAction || !cashCard) {
@@ -41,31 +40,12 @@ export async function initCashCard(user) {
   btnCashAction.addEventListener("click", manejarClickBoton);
   console.log("✅ Evento asignado al botón principal");
 
-  function formatTime(dateStr) {
-    try {
-      if (!dateStr) return "Hora no disponible";
-      const date = new Date(dateStr);
-      return isNaN(date.getTime())
-        ? "Fecha inválida"
-        : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    } catch (error) {
-      return "Error en fecha";
-    }
-  }
-
   function showLoading(message = "Cargando estado de la caja...") {
     cashAmount.textContent = "—";
     cashStart.textContent = message;
     cashStatus.textContent = " ";
     btnCashAction.disabled = true;
     if (btnCashClose) btnCashClose.disabled = true;
-
-    // Actualizar clases de estado
-    cashCard.classList.remove(
-      "cash-status-open",
-      "cash-status-closed",
-      "cash-status-error"
-    );
   }
 
   function showError(message = "Error al obtener el estado") {
@@ -75,18 +55,9 @@ export async function initCashCard(user) {
     btnCashAction.textContent = "Reintentar";
     btnCashAction.disabled = false;
 
-    // Actualizar clases de estado
-    cashCard.classList.remove("cash-status-open", "cash-status-closed");
-    cashCard.classList.add("cash-status-error");
-
     if (btnCashClose) {
       btnCashClose.classList.add("d-none");
       btnCashClose.disabled = true;
-    }
-
-    if (progressBar) {
-      progressBar.style.width = "0%";
-      progressBar.className = "progress-bar bg-danger cash-progress";
     }
   }
 
@@ -100,10 +71,6 @@ export async function initCashCard(user) {
     cashStart.textContent = `Iniciada: ${formatTime(data.starttime)}`;
     cashStatus.innerHTML = `<span class="badge bg-success">Abierta</span>`;
 
-    // Actualizar clases de estado
-    cashCard.classList.remove("cash-status-closed", "cash-status-error");
-    cashCard.classList.add("cash-status-open");
-
     // BOTÓN PARA REGISTRAR VENTA
     btnCashAction.textContent = "Registrar Venta";
     btnCashAction.className =
@@ -115,11 +82,6 @@ export async function initCashCard(user) {
       btnCashClose.disabled = false;
       btnCashClose.onclick = cerrarCaja;
     }
-
-    if (progressBar) {
-      progressBar.style.width = "65%";
-      progressBar.className = "progress-bar bg-success cash-progress";
-    }
   }
 
   function showClosedState() {
@@ -129,10 +91,6 @@ export async function initCashCard(user) {
     cashAmount.textContent = "$0.00";
     cashStart.textContent = "Caja cerrada";
     cashStatus.innerHTML = `<span class="badge bg-danger">Cerrada</span>`;
-
-    // Actualizar clases de estado
-    cashCard.classList.remove("cash-status-open", "cash-status-error");
-    cashCard.classList.add("cash-status-closed");
 
     // BOTÓN PARA ABRIR CAJA
     btnCashAction.textContent = "Abrir Caja";
@@ -144,14 +102,21 @@ export async function initCashCard(user) {
       btnCashClose.classList.add("d-none");
       btnCashClose.disabled = true;
     }
+  }
 
-    if (progressBar) {
-      progressBar.style.width = "0%";
-      progressBar.className = "progress-bar bg-info cash-progress";
+  function formatTime(dateStr) {
+    try {
+      if (!dateStr) return "Hora no disponible";
+      const date = new Date(dateStr);
+      return isNaN(date.getTime())
+        ? "Fecha inválida"
+        : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } catch (error) {
+      return "Error en fecha";
     }
   }
 
-  // ✅ FUNCIÓN PARA ABRIR CAJA
+  // ✅ FUNCIÓN PARA ABRIR CAJA (SIMPLIFICADA)
   async function abrirCaja() {
     console.log("🔄 Abriendo caja...");
 
@@ -173,12 +138,7 @@ export async function initCashCard(user) {
         body: JSON.stringify({ startingcash: parseFloat(monto) }),
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `Error ${res.status} al abrir caja`
-        );
-      }
+      if (!res.ok) throw new Error(`Error ${res.status} al abrir caja`);
 
       await res.json();
       alert("✅ Caja abierta correctamente");
@@ -189,7 +149,7 @@ export async function initCashCard(user) {
     }
   }
 
-  // ✅ FUNCIÓN PARA CERRAR CAJA
+  // ✅ FUNCIÓN PARA CERRAR CAJA (SIMPLIFICADA)
   async function cerrarCaja() {
     console.log("🔄 Cerrando caja...");
 
@@ -219,12 +179,7 @@ export async function initCashCard(user) {
         }
       );
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `Error ${res.status} al cerrar caja`
-        );
-      }
+      if (!res.ok) throw new Error(`Error ${res.status} al cerrar caja`);
 
       await res.json();
       alert("✅ Caja cerrada correctamente");
@@ -236,7 +191,6 @@ export async function initCashCard(user) {
     }
   }
 
-  // En cash-card.js - mantener esta función igual
   function abrirFormularioVenta() {
     console.log("📋 Abriendo formulario de venta...");
 
@@ -245,7 +199,6 @@ export async function initCashCard(user) {
       return;
     }
 
-    // ✅ LLAMAR FUNCIÓN GLOBAL
     if (typeof window.mostrarFormularioVentas === "function") {
       window.mostrarFormularioVentas();
     } else {
@@ -256,6 +209,7 @@ export async function initCashCard(user) {
     }
   }
 
+  // ✅ FUNCIÓN PRINCIPAL PARA VERIFICAR ESTADO DE CAJA
   async function checkCaja() {
     showLoading();
 
@@ -272,16 +226,7 @@ export async function initCashCard(user) {
         },
       });
 
-      if (!res.ok) {
-        let errorMessage = `Error ${res.status}`;
-        try {
-          const errorData = await res.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (e) {
-          errorMessage = res.statusText || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
+      if (!res.ok) throw new Error(`Error ${res.status}`);
 
       const data = await res.json();
 
@@ -314,12 +259,12 @@ export async function initCashCard(user) {
   await checkCaja();
 }
 
-// En cash-card.js - agregar esta función
+// ✅ FUNCIÓN GLOBAL PARA ACTUALIZAR
 export async function recargarEstadoCaja() {
+  console.log("🔄 Recargando estado de caja...");
   if (typeof checkCaja === "function") {
     await checkCaja();
   }
 }
 
-// Hacer disponible globalmente
 window.recargarEstadoCaja = recargarEstadoCaja;

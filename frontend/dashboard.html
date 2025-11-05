@@ -99,11 +99,20 @@
           </div>
 
           <!-- Sección Productos -->
+          <!-- En tu modal de venta, actualiza la sección de productos -->
           <div class="venta-form-section">
             <h5 class="venta-form-section-title">
               <i class="material-icons align-middle">inventory_2</i>
               Productos de la Venta
             </h5>
+
+            <!-- Selector de productos -->
+            <div class="venta-form-input-group">
+              <label class="venta-form-label">Buscar Producto</label>
+              <select id="producto-select" class="form-control">
+                <option value="">Selecciona un producto...</option>
+              </select>
+            </div>
 
             <div id="productos-container"></div>
 
@@ -126,9 +135,9 @@
                   >Método de Pago</label
                 >
                 <select id="metodo" class="venta-form-metodo">
-                  <option value="efectivo">Efectivo</option>
-                  <option value="tarjeta">Tarjeta</option>
-                  <option value="transferencia">Transferencia</option>
+                  <option value="cash">Efectivo</option>
+                  <option value="card">Tarjeta</option>
+                  <option value="virtualpay">Transferencia</option>
                 </select>
               </div>
             </div>

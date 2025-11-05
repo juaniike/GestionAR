@@ -1,6 +1,7 @@
-// sales-form.js - VERSIÓN COMPATIBLE CON TU BACKEND
+// sales-form.js - VERSIÓN COMPLETAMENTE CORREGIDA
 let isSalesFormInitialized = false;
 let productosDisponibles = [];
+let cajaAbierta = null;
 
 export async function initSalesForm() {
   if (isSalesFormInitialized) return;
@@ -31,29 +32,25 @@ export async function initSalesForm() {
 
   console.log("🎯 Formulario de ventas inicializado");
 
-  // ✅ CARGAR PRODUCTOS DEL BACKEND
+  // ✅ CARGAR PRODUCTOS
   async function cargarProductos() {
     try {
       const user = getUserWithToken();
-      if (!user || !user.token) {
-        throw new Error("Usuario no autenticado");
-      }
+      if (!user?.token) throw new Error("Usuario no autenticado");
 
-      const response = await fetch("http://localhost:3000/api/products", {
-        method: "GET",
+      console.log("📦 Cargando productos desde /products...");
+      const response = await fetch("http://localhost:3000/products", {
         headers: {
           Authorization: `Bearer ${user.token}`,
           "Content-Type": "application/json",
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status} al cargar productos`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const products = await response.json();
       productosDisponibles = Array.isArray(products) ? products : [];
-      console.log("✅ Productos cargados:", productosDisponibles.length);
+      console.log(`✅ ${productosDisponibles.length} productos cargados`);
 
       actualizarSelectsProductos();
     } catch (error) {
@@ -70,30 +67,103 @@ export async function initSalesForm() {
       select.innerHTML = `
         <option value="">Seleccionar producto</option>
         ${productosDisponibles
-          .map((producto) => {
-            const stock = producto.stock || 0;
-            const precio = producto.price || 0;
+          .map((product) => {
+            const stock = product.stock || 0;
+            const precio = parseFloat(product.price) || 0;
             const stockClass =
               stock === 0
                 ? "option-no-stock"
-                : stock <= (producto.minstock || 5)
+                : stock <= (product.minstock || 5)
                 ? "option-low-stock"
                 : "";
 
-            return `<option value="${producto.id}" 
-                    data-precio="${precio}" 
-                    data-stock="${stock}"
-                    class="${stockClass}">
-            ${producto.name} - $${precio.toFixed(2)} (Stock: ${stock})
+            return `<option value="${product.id}" 
+                  data-precio="${precio}" 
+                  data-stock="${stock}"
+                  class="${stockClass}">
+            ${product.name} - $${precio.toFixed(2)} (Stock: ${stock})
           </option>`;
           })
           .join("")}
       `;
 
-      if (currentValue) {
-        select.value = currentValue;
-      }
+      if (currentValue) select.value = currentValue;
     });
+  }
+
+  // ✅ VERIFICAR CAJA ABIERTA
+  async function verificarCajaAbierta() {
+    try {
+      const user = getUserWithToken();
+      console.log("💰 Verificando estado de caja...");
+
+      const response = await fetch(
+        "http://localhost:3000/cash-register/status",
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const cajaData = await response.json();
+        console.log("✅ Estado caja:", cajaData);
+        cajaAbierta = cajaData;
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("❌ Error verificando caja:", error);
+      return false;
+    }
+  }
+
+  // ✅ ABRIR CAJA SI ESTÁ CERRADA
+  async function manejarCaja() {
+    const cajaEstaAbierta = await verificarCajaAbierta();
+
+    if (!cajaEstaAbierta) {
+      const abrirCaja = confirm(
+        "❌ La caja está cerrada. ¿Deseas abrirla ahora?"
+      );
+
+      if (abrirCaja) {
+        try {
+          const user = getUserWithToken();
+          const response = await fetch(
+            "http://localhost:3000/cash-register/open",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${user.token}`,
+              },
+              body: JSON.stringify({
+                startingcash: 0,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const nuevaCaja = await response.json();
+            cajaAbierta = nuevaCaja;
+            alert("✅ Caja abierta correctamente");
+            return true;
+          } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Error abriendo caja");
+          }
+        } catch (error) {
+          console.error("Error abriendo caja:", error);
+          alert(`❌ No se pudo abrir la caja: ${error.message}`);
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+    return true;
   }
 
   // ✅ FUNCIÓN PARA MOSTRAR FORMULARIO
@@ -109,10 +179,10 @@ export async function initSalesForm() {
     ventaForm.classList.remove("venta-form-overlay--visible");
     ventaForm.classList.add("venta-form-overlay--hidden");
     resetFormulario();
-    console.log("✅ Formulario de ventas cerrado y reseteado");
+    console.log("✅ Formulario de ventas cerrado");
   }
 
-  // ✅ FUNCIÓN PARA RESETEAR FORMULARIO
+  // ✅ RESETEAR FORMULARIO
   function resetFormulario() {
     productosContainer.innerHTML = "";
     crearProductoRow();
@@ -122,16 +192,14 @@ export async function initSalesForm() {
     totalSpan.textContent = "$0.00";
   }
 
-  // ✅ ASIGNAR EVENTOS
+  // ✅ EVENT LISTENERS
   closeBtn.addEventListener("click", (e) => {
     e.preventDefault();
     cerrarFormulario();
   });
 
   ventaForm.addEventListener("click", (e) => {
-    if (e.target === ventaForm) {
-      cerrarFormulario();
-    }
+    if (e.target === ventaForm) cerrarFormulario();
   });
 
   document.addEventListener("keydown", (e) => {
@@ -154,13 +222,12 @@ export async function initSalesForm() {
       total += cantidad * precio;
     });
     totalSpan.textContent = `$${total.toFixed(2)}`;
+    return total;
   }
 
   function crearProductoRow() {
-    const productoId = `producto-${Date.now()}`;
     const row = document.createElement("div");
     row.className = "producto-item";
-    row.id = productoId;
 
     row.innerHTML = `
       <select class="producto-select" required>
@@ -168,7 +235,7 @@ export async function initSalesForm() {
         ${productosDisponibles
           .map((producto) => {
             const stock = producto.stock || 0;
-            const precio = producto.price || 0;
+            const precio = parseFloat(producto.price) || 0;
             const stockClass =
               stock === 0
                 ? "option-no-stock"
@@ -177,9 +244,9 @@ export async function initSalesForm() {
                 : "";
 
             return `<option value="${producto.id}" 
-                    data-precio="${precio}" 
-                    data-stock="${stock}"
-                    class="${stockClass}">
+                  data-precio="${precio}" 
+                  data-stock="${stock}"
+                  class="${stockClass}">
             ${producto.name} - $${precio.toFixed(2)} (Stock: ${stock})
           </option>`;
           })
@@ -200,7 +267,13 @@ export async function initSalesForm() {
     const subtotal = row.querySelector(".producto-subtotal");
     const removeBtn = row.querySelector(".producto-remove");
 
-    // Actualizar precio cuando se selecciona producto
+    function calcularSubtotal() {
+      const cant = parseFloat(cantidad.value) || 0;
+      const prec = parseFloat(precio.value) || 0;
+      const subtotalCalculado = cant * prec;
+      subtotal.textContent = `$${subtotalCalculado.toFixed(2)}`;
+    }
+
     select.addEventListener("change", function () {
       const selectedOption = this.options[this.selectedIndex];
       if (selectedOption.value) {
@@ -209,46 +282,30 @@ export async function initSalesForm() {
 
         precio.value = precioProducto;
 
-        // Validar stock disponible
+        // Validar stock
         const cantidadActual = parseInt(cantidad.value) || 1;
         if (cantidadActual > stockDisponible) {
-          alert(
-            `⚠️ Stock insuficiente. Solo hay ${stockDisponible} unidades disponibles.`
-          );
+          alert(`⚠️ Stock insuficiente. Máximo: ${stockDisponible}`);
           cantidad.value = stockDisponible;
         }
 
-        // Actualizar máximo permitido
         cantidad.max = stockDisponible;
-
         calcularSubtotal();
         calcularTotal();
       }
     });
 
-    // Calcular subtotal y total cuando cambian valores
-    function calcularSubtotal() {
-      const cant = parseFloat(cantidad.value) || 0;
-      const prec = parseFloat(precio.value) || 0;
-      const subtotalCalculado = cant * prec;
-      subtotal.textContent = `$${subtotalCalculado.toFixed(2)}`;
-    }
-
     cantidad.addEventListener("input", () => {
-      // Validar stock
       const selectedOption = select.options[select.selectedIndex];
       if (selectedOption.value) {
         const stockDisponible = parseInt(selectedOption.dataset.stock);
         const cantidadIngresada = parseInt(cantidad.value) || 0;
 
         if (cantidadIngresada > stockDisponible) {
-          alert(
-            `⚠️ Stock insuficiente. Solo hay ${stockDisponible} unidades disponibles.`
-          );
+          alert(`⚠️ Stock insuficiente. Máximo: ${stockDisponible}`);
           cantidad.value = stockDisponible;
         }
       }
-
       calcularSubtotal();
       calcularTotal();
     });
@@ -258,7 +315,6 @@ export async function initSalesForm() {
       calcularTotal();
     });
 
-    // Eliminar producto
     removeBtn.addEventListener("click", () => {
       row.remove();
       calcularTotal();
@@ -273,35 +329,32 @@ export async function initSalesForm() {
     crearProductoRow();
   });
 
-  // ✅ REGISTRAR VENTA EN EL BACKEND
+  // ✅ REGISTRAR VENTA - ESTRUCTURA CORREGIDA
   async function registrarVenta() {
     const user = getUserWithToken();
-    if (!user || !user.token) {
-      alert("Error: Usuario no autenticado");
+    if (!user?.token) {
+      alert("❌ Error: Usuario no autenticado");
       return false;
     }
 
-    // Verificar que haya una caja abierta
-    const cajaAbierta = await verificarCajaAbierta();
-    if (!cajaAbierta) {
-      alert(
-        "❌ No hay una caja abierta. Debe abrir la caja antes de registrar una venta."
-      );
+    // 1. Verificar y manejar caja
+    const cajaLista = await manejarCaja();
+    if (!cajaLista) {
       return false;
     }
 
-    // Obtener datos del formulario
+    // 2. Validar productos
     const productosVenta = [];
     let isValid = true;
     let errorMessage = "";
 
     productosContainer.querySelectorAll(".producto-item").forEach((row) => {
-      const productoId = row.querySelector(".producto-select").value;
+      const productoSelect = row.querySelector(".producto-select");
+      const productoId = productoSelect.value;
       const cantidad = parseFloat(
         row.querySelector(".producto-cantidad").value
       );
       const precio = parseFloat(row.querySelector(".producto-precio").value);
-      const productoSelect = row.querySelector(".producto-select");
       const selectedOption =
         productoSelect.options[productoSelect.selectedIndex];
       const stockDisponible = parseInt(selectedOption.dataset.stock);
@@ -318,12 +371,6 @@ export async function initSalesForm() {
         return;
       }
 
-      if (isNaN(precio) || precio < 0) {
-        isValid = false;
-        errorMessage = "Los precios deben ser válidos";
-        return;
-      }
-
       if (cantidad > stockDisponible) {
         isValid = false;
         errorMessage = `Stock insuficiente para ${
@@ -332,37 +379,34 @@ export async function initSalesForm() {
         return;
       }
 
+      // ✅ CORREGIDO - usar variables correctas
       productosVenta.push({
-        productId: parseInt(productoId),
+        productid: parseInt(productoId),
         quantity: cantidad,
-        unitPrice: precio,
+        unitprice: precio,
       });
     });
 
     if (!isValid) {
-      alert(`Error: ${errorMessage}`);
+      alert(`❌ Error: ${errorMessage}`);
       return false;
     }
 
     if (productosVenta.length === 0) {
-      alert("Por favor agregue al menos un producto a la venta.");
+      alert("❌ Por favor agregue al menos un producto");
       return false;
     }
 
-    // Preparar datos para el backend según tu estructura
+    // 3. Preparar datos para el endpoint /sales
     const ventaData = {
-      client: document.getElementById("cliente").value || null,
-      paymentMethod: document.getElementById("metodo").value,
-      onAccount: document.getElementById("cuenta-corriente").checked,
-      products: productosVenta,
-      total: parseFloat(totalSpan.textContent.replace("$", "")),
-      cashRegisterId: cajaAbierta.id, // Incluir el ID de la caja abierta
+      items: productosVenta,
+      paymentmethod: document.getElementById("metodo").value,
     };
 
-    console.log("📤 Enviando venta al backend:", ventaData);
+    console.log("📤 Enviando venta:", ventaData);
 
     try {
-      const response = await fetch("http://localhost:3000/api/sales", {
+      const response = await fetch("http://localhost:3000/sales", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -373,58 +417,32 @@ export async function initSalesForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.message || `Error ${response.status} al registrar venta`
-        );
+        throw new Error(errorData.message || `Error ${response.status}`);
       }
 
       const result = await response.json();
       console.log("✅ Venta registrada:", result);
 
-      // Mostrar ticket si está disponible
-      if (result.id) {
-        setTimeout(() => {
-          if (
-            confirm(
-              "✅ Venta registrada exitosamente. ¿Desea generar el ticket?"
-            )
-          ) {
-            generarTicket(result.id);
-          }
-        }, 500);
+      // Después de registrar venta exitosa - en sales-form.js
+      if (typeof window.recargarEstadoCaja === "function") {
+        await window.recargarEstadoCaja();
+        console.log("💰 Estado de caja actualizado después de venta");
       }
+
+      // Éxito - preguntar por ticket
+      setTimeout(() => {
+        if (
+          confirm("✅ Venta registrada exitosamente. ¿Desea generar el ticket?")
+        ) {
+          generarTicket(result.id);
+        }
+      }, 500);
 
       return true;
     } catch (error) {
       console.error("❌ Error registrando venta:", error);
-      alert("Error al registrar la venta: " + error.message);
+      alert(`❌ Error al registrar la venta: ${error.message}`);
       return false;
-    }
-  }
-
-  // ✅ VERIFICAR CAJA ABIERTA
-  async function verificarCajaAbierta() {
-    try {
-      const user = getUserWithToken();
-      const response = await fetch(
-        "http://localhost:3000/api/cash-register/status",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.ok) {
-        const caja = await response.json();
-        return caja; // Retorna la caja abierta o null
-      }
-      return null;
-    } catch (error) {
-      console.error("Error verificando caja:", error);
-      return null;
     }
   }
 
@@ -433,9 +451,8 @@ export async function initSalesForm() {
     try {
       const user = getUserWithToken();
       const response = await fetch(
-        `http://localhost:3000/api/sales/${saleId}/ticket`,
+        `http://localhost:3000/sales/${saleId}/ticket`,
         {
-          method: "GET",
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
@@ -447,10 +464,10 @@ export async function initSalesForm() {
         const ticketUrl = URL.createObjectURL(ticketBlob);
         window.open(ticketUrl, "_blank");
       } else {
-        console.warn("No se pudo generar el ticket");
+        console.warn("⚠️ No se pudo generar el ticket");
       }
     } catch (error) {
-      console.error("Error generando ticket:", error);
+      console.error("❌ Error generando ticket:", error);
     }
   }
 
@@ -458,7 +475,7 @@ export async function initSalesForm() {
   submitBtn.addEventListener("click", async (e) => {
     e.preventDefault();
 
-    // Mostrar loading
+    // Loading state
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
     submitBtn.innerHTML =
@@ -471,13 +488,13 @@ export async function initSalesForm() {
         cerrarFormulario();
 
         // Recargar datos del dashboard
-        if (typeof window.recargarDashboard === "function") {
-          window.recargarDashboard();
+        if (typeof window.refreshDashboard === "function") {
+          window.refreshDashboard();
         }
 
-        // Recargar estado de caja
-        if (typeof window.recargarEstadoCaja === "function") {
-          window.recargarEstadoCaja();
+        // Recargar stock
+        if (typeof window.refreshStockCard === "function") {
+          window.refreshStockCard();
         }
       }
     } finally {
@@ -492,15 +509,11 @@ export async function initSalesForm() {
 
   // ✅ HACER FUNCIONES DISPONIBLES GLOBALMENTE
   window.mostrarFormularioVentas = mostrarFormulario;
-  window.recargarEstadoCaja = () => {
-    // Esta función será implementada en cash-card.js
-    console.log("Recargar estado de caja...");
-  };
 
   console.log("✅ Sales Form completamente inicializado");
 }
 
-// Función auxiliar para obtener usuario
+// ✅ FUNCIÓN AUXILIAR PARA OBTENER USUARIO
 function getUserWithToken() {
   try {
     const user =

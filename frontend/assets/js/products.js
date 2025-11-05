@@ -491,8 +491,14 @@ async function saveProduct() {
 
     await loadProductsData();
 
-    // ✅ AGREGAR ESTA LÍNEA NUEVA
+    // ✅ ACTUALIZAR STOCK CARD
     await refreshStockCard();
+
+    // ✅ NUEVO: ACTUALIZAR CASH CARD
+    if (typeof window.recargarEstadoCaja === "function") {
+      await window.recargarEstadoCaja();
+      console.log("💰 Estado de caja actualizado después de guardar producto");
+    }
 
     console.log(
       `✅ Producto ${currentEditingId ? "actualizado" : "creado"} correctamente`
@@ -530,8 +536,14 @@ async function deleteProduct(productId) {
 
     await loadProductsData();
 
-    // ✅ AGREGAR ESTA LÍNEA NUEVA
+    // ✅ ACTUALIZAR STOCK CARD
     await refreshStockCard();
+
+    // ✅ NUEVO: ACTUALIZAR CASH CARD
+    if (typeof window.recargarEstadoCaja === "function") {
+      await window.recargarEstadoCaja();
+      console.log("💰 Estado de caja actualizado después de eliminar producto");
+    }
 
     console.log("✅ Producto eliminado correctamente");
   } catch (error) {
