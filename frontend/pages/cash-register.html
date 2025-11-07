@@ -1,0 +1,579 @@
+<style>
+  .caja-status-open {
+    border-left: 4px solid #4caf50 !important;
+  }
+  .caja-status-closed {
+    border-left: 4px solid #f44336 !important;
+  }
+  .movimiento-ingreso {
+    border-left: 4px solid #4caf50;
+  }
+  .movimiento-egreso {
+    border-left: 4px solid #f44336;
+  }
+  .metodo-cash {
+    background-color: #e8f5e8;
+  }
+  .metodo-card {
+    background-color: #e3f2fd;
+  }
+  .metodo-virtual {
+    background-color: #f3e5f5;
+  }
+  .stats-card {
+    transition: all 0.3s ease;
+  }
+  .stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<!-- Navbar -->
+<div id="navbar-container"></div>
+
+<!-- Contenido Principal -->
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div
+          class="card-header pb-0 d-flex justify-content-between align-items-center"
+        >
+          <div>
+            <h5>Caja Registradora</h5>
+            <p class="text-sm">Gestión detallada de caja y movimientos</p>
+          </div>
+          <div class="d-flex gap-2">
+            <button id="btn-abrir-caja" class="btn btn-success btn-sm">
+              <i class="material-icons me-1">point_of_sale</i>
+              Abrir Caja
+            </button>
+            <button id="btn-cerrar-caja" class="btn btn-danger btn-sm d-none">
+              <i class="material-icons me-1">lock</i>
+              Cerrar Caja
+            </button>
+            <button id="btn-movimiento" class="btn btn-info btn-sm">
+              <i class="material-icons me-1">swap_horiz</i>
+              Nuevo Movimiento
+            </button>
+            <button id="btn-reporte-caja" class="btn btn-warning btn-sm">
+              <i class="material-icons me-1">summarize</i>
+              Reporte Diario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado Actual de Caja -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card caja-status-closed" id="caja-status-card">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h4 id="caja-status-title" class="text-danger mb-1">
+                Caja Cerrada
+              </h4>
+              <p class="text-muted mb-2" id="caja-status-desc">
+                No hay caja abierta actualmente
+              </p>
+              <div class="row">
+                <div class="col-sm-4">
+                  <small class="text-muted">Operador:</small>
+                  <p class="mb-0" id="caja-operador">--</p>
+                </div>
+                <div class="col-sm-4">
+                  <small class="text-muted">Hora apertura:</small>
+                  <p class="mb-0" id="caja-apertura">--</p>
+                </div>
+                <div class="col-sm-4">
+                  <small class="text-muted">Tiempo activa:</small>
+                  <p class="mb-0" id="caja-tiempo">--</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-end">
+              <h2 id="caja-monto-actual" class="text-danger">$0.00</h2>
+              <small class="text-muted">Monto en caja</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas en Tiempo Real -->
+  <div class="row mb-4">
+    <!-- Ventas del Día -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card stats-card bg-gradient-success">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-white text-sm mb-1">Ventas Hoy</p>
+              <h4 class="text-white mb-0" id="stats-ventas-count">0</h4>
+              <small class="text-white opacity-8" id="stats-ventas-total"
+                >$0.00</small
+              >
+            </div>
+            <i class="material-icons text-white opacity-6">shopping_cart</i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Efectivo en Caja -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card stats-card bg-gradient-info">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-white text-sm mb-1">Efectivo Total</p>
+              <h4 class="text-white mb-0" id="stats-efectivo-total">$0.00</h4>
+              <small class="text-white opacity-8">Incluye ventas</small>
+            </div>
+            <i class="material-icons text-white opacity-6">payments</i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transacciones -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card stats-card bg-gradient-warning">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-white text-sm mb-1">Transacciones</p>
+              <h4 class="text-white mb-0" id="stats-transacciones">0</h4>
+              <small class="text-white opacity-8">Ventas registradas</small>
+            </div>
+            <i class="material-icons text-white opacity-6">receipt</i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métodos de Pago -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card stats-card bg-gradient-primary">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-white text-sm mb-1">Ticket Promedio</p>
+              <h4 class="text-white mb-0" id="stats-ticket-promedio">$0.00</h4>
+              <small class="text-white opacity-8">Por venta</small>
+            </div>
+            <i class="material-icons text-white opacity-6">trending_up</i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Distribución por Métodos de Pago -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header pb-0">
+          <h6>Métodos de Pago</h6>
+          <p class="text-sm">Distribución de ventas por tipo de pago</p>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-4">
+              <div class="metodo-cash p-3 rounded">
+                <i class="material-icons text-success">payments</i>
+                <h6 class="mt-2" id="metodo-cash-monto">$0.00</h6>
+                <small class="text-muted">Efectivo</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="metodo-card p-3 rounded">
+                <i class="material-icons text-info">credit_card</i>
+                <h6 class="mt-2" id="metodo-card-monto">$0.00</h6>
+                <small class="text-muted">Tarjeta</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="metodo-virtual p-3 rounded">
+                <i class="material-icons text-primary">account_balance</i>
+                <h6 class="mt-2" id="metodo-virtual-monto">$0.00</h6>
+                <small class="text-muted">Virtual</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movimientos Recientes -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div
+          class="card-header pb-0 d-flex justify-content-between align-items-center"
+        >
+          <div>
+            <h6>Movimientos Recientes</h6>
+            <p class="text-sm">Últimos 5 movimientos</p>
+          </div>
+          <button
+            class="btn btn-sm btn-outline-primary"
+            id="btn-ver-todos-movimientos"
+          >
+            Ver Todos
+          </button>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush" id="movimientos-recientes">
+            <div class="list-group-item text-center py-4">
+              <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial de Movimientos -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header pb-0">
+          <div
+            class="d-flex justify-content-between align-items-center flex-wrap gap-2"
+          >
+            <div>
+              <h6>Historial de Movimientos</h6>
+              <p class="text-sm mb-0" id="movimientos-info">
+                Cargando movimientos...
+              </p>
+            </div>
+            <div class="d-flex gap-2">
+              <input
+                type="date"
+                id="filtro-fecha-movimientos"
+                class="form-control form-control-sm"
+              />
+              <select
+                id="filtro-tipo-movimiento"
+                class="form-select form-select-sm"
+              >
+                <option value="">Todos los tipos</option>
+                <option value="ingreso">Ingresos</option>
+                <option value="egreso">Egresos</option>
+              </select>
+              <button
+                id="btn-refresh-movimientos"
+                class="btn btn-outline-primary btn-sm"
+              >
+                <i class="material-icons me-1">refresh</i>
+                Actualizar
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body px-0 pt-0 pb-2">
+          <div class="table-responsive p-0">
+            <table class="table align-items-center mb-0">
+              <thead>
+                <tr>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Fecha/Hora
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2"
+                  >
+                    Tipo
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Concepto
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Monto
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Usuario
+                  </th>
+                  <th
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                  >
+                    Comprobante
+                  </th>
+                  <th class="text-secondary opacity-7">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="movimientos-table-body">
+                <tr>
+                  <td colspan="7" class="text-center py-4">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden"
+                        >Cargando movimientos...</span
+                      >
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación -->
+          <div
+            class="card-footer d-flex justify-content-between align-items-center"
+          >
+            <div class="text-sm text-muted" id="pagination-info-movimientos">
+              Mostrando 0 movimientos
+            </div>
+            <nav>
+              <ul
+                class="pagination pagination-sm mb-0"
+                id="pagination-controls-movimientos"
+              >
+                <!-- Controles de paginación -->
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Abrir Caja -->
+<div class="modal fade" id="modal-abrir-caja" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Abrir Caja</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-abrir-caja">
+          <div class="form-group">
+            <label class="form-label">Monto Inicial</label>
+            <div class="input-group input-group-outline">
+              <input
+                type="number"
+                id="monto-inicial"
+                class="form-control"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+            <small class="text-muted"
+              >Ingrese el monto con el que inicia la caja</small
+            >
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Observaciones (opcional)</label>
+            <div class="input-group input-group-outline">
+              <textarea
+                id="observaciones-apertura"
+                class="form-control"
+                rows="2"
+              ></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          id="btn-confirmar-apertura"
+        >
+          Abrir Caja
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cerrar Caja -->
+<div class="modal fade" id="modal-cerrar-caja" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cerrar Caja</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-cerrar-caja">
+          <div class="alert alert-info">
+            <i class="material-icons me-2">info</i>
+            <strong>Resumen de la jornada:</strong>
+            <div class="mt-2">
+              <div class="d-flex justify-content-between">
+                <span>Monto inicial:</span>
+                <span id="resumen-monto-inicial">$0.00</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Ventas en efectivo:</span>
+                <span id="resumen-ventas-efectivo">$0.00</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Total esperado:</span>
+                <span id="resumen-total-esperado" class="fw-bold">$0.00</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Monto Final en Caja</label>
+            <div class="input-group input-group-outline">
+              <input
+                type="number"
+                id="monto-final"
+                class="form-control"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+            <small class="text-muted"
+              >Ingrese el monto real contado en caja</small
+            >
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Diferencia</label>
+            <div class="input-group input-group-outline">
+              <input
+                type="text"
+                id="diferencia-caja"
+                class="form-control"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Observaciones (opcional)</label>
+            <div class="input-group input-group-outline">
+              <textarea
+                id="observaciones-cierre"
+                class="form-control"
+                rows="2"
+              ></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-danger" id="btn-confirmar-cierre">
+          Cerrar Caja
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuevo Movimiento -->
+<div class="modal fade" id="modal-nuevo-movimiento" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nuevo Movimiento de Caja</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-nuevo-movimiento">
+          <div class="form-group">
+            <label class="form-label">Tipo de Movimiento</label>
+            <select id="tipo-movimiento" class="form-select" required>
+              <option value="">Seleccionar tipo</option>
+              <option value="ingreso">Ingreso</option>
+              <option value="egreso">Egreso</option>
+            </select>
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Concepto</label>
+            <div class="input-group input-group-outline">
+              <input
+                type="text"
+                id="concepto-movimiento"
+                class="form-control"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Monto</label>
+            <div class="input-group input-group-outline">
+              <input
+                type="number"
+                id="monto-movimiento"
+                class="form-control"
+                step="0.01"
+                min="0.01"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Comprobante (opcional)</label>
+            <div class="input-group input-group-outline">
+              <input
+                type="text"
+                id="comprobante-movimiento"
+                class="form-control"
+              />
+            </div>
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Observaciones (opcional)</label>
+            <div class="input-group input-group-outline">
+              <textarea
+                id="observaciones-movimiento"
+                class="form-control"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          id="btn-guardar-movimiento"
+        >
+          Guardar Movimiento
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

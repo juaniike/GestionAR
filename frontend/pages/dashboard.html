@@ -1,0 +1,140 @@
+<!-- Cards resumen -->
+<div id="cards-container" class="row g-2 mb-4"></div>
+
+<!-- Gráficos -->
+<div id="cards-graph" class="row g-4"></div>
+
+<!-- En dashboard.html - MODAL ACTUALIZADO PARA MATERIAL DASHBOARD -->
+<div
+  class="modal fade"
+  id="venta-form"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="venta-form-label"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <!-- Header del modal -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="venta-form-label">
+          <i class="material-icons me-2">shopping_cart</i>
+          Registrar Venta
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Body del modal -->
+      <div class="modal-body">
+        <!-- Alerta de estado de caja -->
+        <div id="cash-status-alert" class="alert alert-info d-none">
+          <i class="material-icons me-2">info</i>
+          <span id="cash-status-text">Verificando estado de caja...</span>
+        </div>
+
+        <!-- Sección Cliente -->
+        <div class="card card-body mb-3">
+          <h6 class="card-title">
+            <i class="material-icons me-2">person</i>
+            Información del Cliente
+          </h6>
+          <div class="row">
+            <div class="col-md-8">
+              <div class="input-group input-group-static">
+                <label>Cliente (opcional)</label>
+                <input
+                  type="text"
+                  id="cliente"
+                  class="form-control"
+                  placeholder="Nombre del cliente"
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-check mt-4">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="cuenta-corriente"
+                />
+                <label class="form-check-label" for="cuenta-corriente">
+                  Agregar a cuenta corriente
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección Productos -->
+        <div class="card card-body mb-3">
+          <h6 class="card-title">
+            <i class="material-icons me-2">inventory_2</i>
+            Productos de la Venta
+          </h6>
+
+          <!-- Selector de productos -->
+          <div class="input-group input-group-static mb-3">
+            <label>Buscar Producto</label>
+            <select id="producto-select" class="form-control">
+              <option value="">Selecciona un producto...</option>
+            </select>
+          </div>
+
+          <!-- Lista de productos seleccionados -->
+          <div id="productos-container" class="mb-3">
+            <div class="text-center text-muted py-3">
+              <i class="material-icons mb-2">shopping_basket</i>
+              <p>No hay productos agregados</p>
+            </div>
+          </div>
+
+          <button id="add-product" class="btn btn-outline-primary btn-sm">
+            <i class="material-icons me-1">add</i>
+            Agregar Producto
+          </button>
+        </div>
+
+        <!-- Sección Totales -->
+        <div class="card card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Total de la Venta</h6>
+                <h4 class="text-success mb-0" id="total-venta">$0.00</h4>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-static">
+                <label>Método de Pago</label>
+                <select id="metodo" class="form-control">
+                  <option value="cash">Efectivo</option>
+                  <option value="card">Tarjeta</option>
+                  <option value="virtualpay">Transferencia</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer del modal -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="material-icons me-1">close</i>
+          Cancelar
+        </button>
+        <button type="button" id="submit-venta" class="btn btn-success">
+          <i class="material-icons me-1">check_circle</i>
+          Confirmar Venta
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
