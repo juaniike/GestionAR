@@ -1,97 +1,66 @@
-// assets/js/services/cash-service.js - SERVICIO CENTRALIZADO DE CAJA
+// assets/js/services/cash.service.js
 class CashService {
-  constructor() {
-    this.baseURL = "http://localhost:3000";
+  constructor(apiService) {
+    this.apiService = apiService;
     this.cache = {
       cashStatus: null,
       todaySales: null,
+      movements: null,
       lastUpdate: null,
-      ttl: 60000, // 1 minuto de cache
+      ttl: 30000, // 30 segundos
     };
+    console.log("💰 CashService instanciado");
   }
 
-  // ✅ OBTENER ESTADO ACTUAL DE CAJA
   async getCashStatus(forceRefresh = false) {
-    // Verificar cache
-    if (!forceRefresh && this.isCacheValid("cashStatus")) {
-      console.log("💰 [CashService] Usando cache de estado de caja");
-      return this.cache.cashStatus;
-    }
-
     try {
-      const user = this.getUserWithToken();
-      if (!user?.token) {
-        throw new Error("Usuario no autenticado");
+      // Verificar cache
+      if (!forceRefresh && this.isCacheValid()) {
+        console.log("💰 [CashService] Usando datos en cache");
+        return this.cache.cashStatus;
       }
 
       console.log("💰 [CashService] Obteniendo estado de caja...");
-      const response = await fetch(`${this.baseURL}/cash-register/status`, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const cashData = await this.apiService.get(
+        this.apiService.endpoints.CASH_STATUS
+      );
 
-      if (response.status === 404) {
-        // Caja cerrada - esto es normal, no es error
-        this.cache.cashStatus = null;
-        this.cache.lastUpdate = Date.now();
-        return null;
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status} al obtener estado de caja`);
-      }
-
-      const cashData = await response.json();
-
-      // Actualizar cache
-      this.cache.cashStatus = cashData;
+      this.cache.cashStatus = cashData || null;
       this.cache.lastUpdate = Date.now();
 
-      console.log("💰 [CashService] Estado de caja obtenido:", cashData);
+      console.log(
+        "💰 [CashService] Estado de caja:",
+        cashData ? "ABIERTA" : "CERRADA"
+      );
       return cashData;
     } catch (error) {
-      console.error("❌ [CashService] Error obteniendo estado de caja:", error);
-      throw error;
+      if (
+        error.message.includes("404") ||
+        error.message.includes("Not Found")
+      ) {
+        console.log("💰 [CashService] No hay caja abierta");
+        this.cache.cashStatus = null;
+        return null;
+      }
+      console.error("❌ [CashService] Error:", error.message);
+      return null;
     }
   }
 
-  // ✅ ABRIR CAJA
-  async openCashRegister(startingCash, observations = "") {
+  async openCashRegister(initialAmount, observations = "") {
     try {
-      const user = this.getUserWithToken();
-      if (!user?.token) {
-        throw new Error("Usuario no autenticado");
-      }
+      console.log("💰 [CashService] Abriendo caja:", initialAmount);
 
-      console.log("💰 [CashService] Abriendo caja con monto:", startingCash);
-      const response = await fetch(`${this.baseURL}/cash-register/open`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({
-          startingcash: parseFloat(startingCash),
+      const result = await this.apiService.post(
+        this.apiService.endpoints.CASH_OPEN,
+        {
+          startingcash: parseFloat(initialAmount),
           observations: observations,
-        }),
-      });
+        }
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || `Error ${response.status} al abrir caja`
-        );
-      }
-
-      const result = await response.json();
-
-      // Invalidar cache
-      this.cache.cashStatus = null;
-      this.cache.todaySales = null;
-
-      console.log("💰 [CashService] Caja abierta correctamente:", result);
+      this.clearCache();
+      console.log("💰 [CashService] Caja abierta:", result);
       return result;
     } catch (error) {
       console.error("❌ [CashService] Error abriendo caja:", error);
@@ -99,44 +68,20 @@ class CashService {
     }
   }
 
-  // ✅ CERRAR CAJA
-  async closeCashRegister(cashRegisterId, endingCash, observations = "") {
+  async closeCashRegister(cashRegisterId, finalAmount, observations = "") {
     try {
-      const user = this.getUserWithToken();
-      if (!user?.token) {
-        throw new Error("Usuario no autenticado");
-      }
+      console.log("💰 [CashService] Cerrando caja:", finalAmount);
 
-      console.log("💰 [CashService] Cerrando caja ID:", cashRegisterId);
-      const response = await fetch(
-        `${this.baseURL}/cash-register/${cashRegisterId}/close`,
+      const result = await this.apiService.post(
+        this.apiService.endpoints.CASH_CLOSE(cashRegisterId),
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: JSON.stringify({
-            endingcash: parseFloat(endingCash),
-            observations: observations,
-          }),
+          endingcash: parseFloat(finalAmount),
+          observations: observations,
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || `Error ${response.status} al cerrar caja`
-        );
-      }
-
-      const result = await response.json();
-
-      // Invalidar cache
-      this.cache.cashStatus = null;
-      this.cache.todaySales = null;
-
-      console.log("💰 [CashService] Caja cerrada correctamente:", result);
+      this.clearCache();
+      console.log("💰 [CashService] Caja cerrada:", result);
       return result;
     } catch (error) {
       console.error("❌ [CashService] Error cerrando caja:", error);
@@ -144,247 +89,250 @@ class CashService {
     }
   }
 
-  // ✅ OBTENER VENTAS DEL DÍA
-  async getTodaySales(cashRegisterId = null, forceRefresh = false) {
-    // Verificar cache
-    const cacheKey = `todaySales_${cashRegisterId || "all"}`;
-    if (!forceRefresh && this.isCacheValid(cacheKey)) {
-      console.log("💰 [CashService] Usando cache de ventas del día");
-      return this.cache[cacheKey];
-    }
-
+  async getTodaySales(cashRegisterId = null) {
     try {
-      const user = this.getUserWithToken();
-      if (!user?.token) {
-        throw new Error("Usuario no autenticado");
-      }
-
-      const today = new Date().toISOString().split("T")[0];
-      let url = `${this.baseURL}/sales?date=${today}`;
-
-      if (cashRegisterId) {
-        url += `&cashregister=${cashRegisterId}`;
+      // Si ya tenemos ventas en cache y son recientes, usarlas
+      if (
+        this.cache.todaySales &&
+        Date.now() - this.cache.lastUpdate < this.cache.ttl
+      ) {
+        return this.cache.todaySales;
       }
 
       console.log("💰 [CashService] Obteniendo ventas del día...");
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
+
+      // Obtener todas las ventas y filtrar las de hoy
+      const today = new Date().toISOString().split("T")[0];
+      const allSales = await this.apiService.get(
+        this.apiService.endpoints.SALES
+      );
+
+      const todaySales = allSales.filter((sale) => {
+        const saleDate = new Date(sale.date).toISOString().split("T")[0];
+        return saleDate === today;
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status} al obtener ventas`);
-      }
-
-      const sales = await response.json();
-
-      // Actualizar cache
-      this.cache[cacheKey] = sales;
+      this.cache.todaySales = todaySales;
       this.cache.lastUpdate = Date.now();
 
-      console.log(`💰 [CashService] ${sales.length} ventas obtenidas`);
-      return sales;
+      console.log(
+        `💰 [CashService] ${todaySales.length} ventas de hoy cargadas`
+      );
+      return todaySales;
     } catch (error) {
       console.error("❌ [CashService] Error obteniendo ventas:", error);
-      // En caso de error, retornar array vacío en lugar de fallar completamente
       return [];
     }
   }
 
-  // ✅ CALCULAR MÉTRICAS DE VENTAS
-  calculateMetrics(sales, cashRegisterId = null) {
-    if (!Array.isArray(sales) || sales.length === 0) {
-      return {
-        totalSales: 0,
-        transactions: 0,
-        cashTotal: 0,
-        cardTotal: 0,
-        virtualTotal: 0,
-        totalProfit: 0,
-        averageTicket: 0,
-      };
-    }
-
-    let totalSales = 0;
-    let transactions = 0;
-    let cashTotal = 0;
-    let cardTotal = 0;
-    let virtualTotal = 0;
-    let totalProfit = 0;
-
-    const filteredSales = cashRegisterId
-      ? sales.filter((sale) => sale.cashregisterid === cashRegisterId)
-      : sales;
-
-    filteredSales.forEach((sale) => {
-      const saleAmount = parseFloat(sale.totalamount) || 0;
-      const saleProfit = parseFloat(sale.profit) || 0;
-
-      totalSales += saleAmount;
-      totalProfit += saleProfit;
-      transactions++;
-
-      const paymentMethod = sale.paymentmethod?.toLowerCase();
-      if (paymentMethod === "cash" || paymentMethod === "efectivo") {
-        cashTotal += saleAmount;
-      } else if (paymentMethod === "card" || paymentMethod === "tarjeta") {
-        cardTotal += saleAmount;
-      } else {
-        virtualTotal += saleAmount;
-      }
-    });
-
-    return {
-      totalSales,
-      transactions,
-      cashTotal,
-      cardTotal,
-      virtualTotal,
-      totalProfit,
-      averageTicket: transactions > 0 ? totalSales / transactions : 0,
-    };
-  }
-
-  // ✅ CALCULAR TIEMPO ACTIVA
-  calculateOpenDuration(startTime) {
-    if (!startTime) return "0h 0m";
-
+  // ✅ NUEVO: Obtener movimientos REALES
+  async getMovements(filters = {}) {
     try {
-      const start = new Date(startTime);
-      const now = new Date();
+      console.log("💰 [CashService] Obteniendo movimientos...", filters);
 
-      if (isNaN(start.getTime())) {
-        return "0h 0m";
-      }
+      // Construir parámetros de consulta
+      const queryParams = new URLSearchParams();
+      if (filters.cash_register_id)
+        queryParams.append("cash_register_id", filters.cash_register_id);
+      if (filters.type) queryParams.append("type", filters.type);
+      if (filters.category) queryParams.append("category", filters.category);
+      if (filters.date) queryParams.append("date", filters.date);
 
-      const diffMs = now - start;
-      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-      const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const url = `${this.apiService.endpoints.MOVEMENTS}?${queryParams}`;
+      const movements = await this.apiService.get(url);
 
-      return `${diffHrs}h ${diffMins}m`;
-    } catch (error) {
-      console.warn("⚠️ [CashService] Error calculando duración:", error);
-      return "0h 0m";
-    }
-  }
-
-  // ✅ FORMATEAR HORA
-  formatTime(dateStr) {
-    try {
-      if (!dateStr) return "--";
-      const date = new Date(dateStr);
-      return isNaN(date.getTime())
-        ? "--"
-        : date.toLocaleTimeString("es-AR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-    } catch (error) {
-      return "--";
-    }
-  }
-
-  // ✅ VERIFICAR SI LA CAJA ESTÁ ABIERTA (MÉTODO DE CONVENIENCIA)
-  async isCashRegisterOpen() {
-    try {
-      const status = await this.getCashStatus();
-      return !!status;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  // ✅ OBTENER RESUMEN COMPLETO (CAJA + MÉTRICAS)
-  async getFullSummary(cashRegisterId = null) {
-    try {
-      const [cashStatus, todaySales] = await Promise.all([
-        this.getCashStatus(),
-        this.getTodaySales(cashRegisterId),
-      ]);
-
-      const metrics = this.calculateMetrics(todaySales, cashRegisterId);
-
-      return {
-        cashStatus,
-        sales: todaySales,
-        metrics,
-        openDuration: cashStatus
-          ? this.calculateOpenDuration(cashStatus.starttime)
-          : "0h 0m",
-        lastUpdate: new Date(),
-      };
-    } catch (error) {
-      console.error(
-        "❌ [CashService] Error obteniendo resumen completo:",
-        error
+      console.log(
+        `💰 [CashService] ${movements?.length || 0} movimientos obtenidos`
       );
+      return movements || [];
+    } catch (error) {
+      console.error("❌ [CashService] Error obteniendo movimientos:", error);
+      return [];
+    }
+  }
+
+  // ✅ NUEVO: Crear movimiento REAL
+  async createMovement(movementData) {
+    try {
+      console.log("💰 [CashService] Creando movimiento:", movementData);
+
+      // Validar datos requeridos
+      if (!movementData.type || !movementData.concept || !movementData.amount) {
+        throw new Error("Datos incompletos para crear movimiento");
+      }
+
+      const movementPayload = {
+        type: movementData.type,
+        concept: movementData.concept,
+        amount: parseFloat(movementData.amount),
+        category: movementData.category || "other",
+        payment_method: movementData.payment_method || "cash",
+        receipt_number: movementData.receipt_number || null,
+        observations: movementData.observations || null,
+        cash_register_id: movementData.cash_register_id,
+      };
+
+      const result = await this.apiService.post(
+        this.apiService.endpoints.MOVEMENTS,
+        movementPayload
+      );
+
+      // Invalidar cache
+      this.clearCache();
+
+      console.log("💰 [CashService] Movimiento creado:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ [CashService] Error creando movimiento:", error);
       throw error;
     }
   }
 
-  // ✅ INVALIDAR CACHE (PARA FORZAR ACTUALIZACIÓN)
-  invalidateCache() {
+  // ✅ NUEVO: Obtener movimientos del día actual
+  async getTodayMovements(cashRegisterId = null) {
+    try {
+      console.log("💰 [CashService] Obteniendo movimientos de hoy...");
+
+      const queryParams = new URLSearchParams();
+      if (cashRegisterId)
+        queryParams.append("cash_register_id", cashRegisterId);
+
+      const url = `${this.apiService.endpoints.MOVEMENTS_TODAY}?${queryParams}`;
+      const movements = await this.apiService.get(url);
+
+      console.log(
+        `💰 [CashService] ${movements?.length || 0} movimientos de hoy`
+      );
+      return movements || [];
+    } catch (error) {
+      console.error(
+        "❌ [CashService] Error obteniendo movimientos de hoy:",
+        error
+      );
+      return [];
+    }
+  }
+
+  // ✅ NUEVO: Obtener totales de movimientos
+  async getMovementTotals(cashRegisterId, date = null) {
+    try {
+      console.log("💰 [CashService] Obteniendo totales de movimientos...");
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("cash_register_id", cashRegisterId);
+      if (date) queryParams.append("date", date);
+
+      const url = `${this.apiService.endpoints.MOVEMENTS_TOTALS}?${queryParams}`;
+      const totals = await this.apiService.get(url);
+
+      console.log("💰 [CashService] Totales obtenidos:", totals);
+      return totals || { ingresos: 0, egresos: 0 };
+    } catch (error) {
+      console.error("❌ [CashService] Error obteniendo totales:", error);
+      return { ingresos: 0, egresos: 0 };
+    }
+  }
+
+  // ✅ MEJORADO: Calcular métricas incluyendo movimientos
+  calculateMetrics(sales, movements = [], cashRegisterId) {
+    // Calcular métricas de ventas
+    const totalSales = sales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+    const transactions = sales.length;
+    const averageTicket = transactions > 0 ? totalSales / transactions : 0;
+
+    // Calcular distribución por método de pago (solo ventas)
+    const paymentMethods = {
+      cash: 0,
+      card: 0,
+      virtualpay: 0,
+    };
+
+    sales.forEach((sale) => {
+      if (
+        sale.paymentmethod &&
+        paymentMethods.hasOwnProperty(sale.paymentmethod)
+      ) {
+        paymentMethods[sale.paymentmethod] += sale.total || 0;
+      }
+    });
+
+    // ✅ NUEVO: Calcular totales de movimientos
+    const movementIngresos = movements
+      .filter((m) => m.type === "ingreso")
+      .reduce((sum, m) => sum + (m.amount || 0), 0);
+
+    const movementEgresos = movements
+      .filter((m) => m.type === "egreso")
+      .reduce((sum, m) => sum + (m.amount || 0), 0);
+
+    return {
+      // Métricas de ventas
+      totalSales: parseFloat(totalSales.toFixed(2)),
+      transactions,
+      averageTicket: parseFloat(averageTicket.toFixed(2)),
+      cashTotal: parseFloat(paymentMethods.cash.toFixed(2)),
+      cardTotal: parseFloat(paymentMethods.card.toFixed(2)),
+      virtualTotal: parseFloat(paymentMethods.virtualpay.toFixed(2)),
+
+      // ✅ NUEVO: Métricas de movimientos
+      movementIngresos: parseFloat(movementIngresos.toFixed(2)),
+      movementEgresos: parseFloat(movementEgresos.toFixed(2)),
+      netMovements: parseFloat((movementIngresos - movementEgresos).toFixed(2)),
+    };
+  }
+
+  // Métodos de utilidad
+  calculateOpenDuration(startTime) {
+    if (!startTime) return "0h 0m";
+    const diff = new Date() - new Date(startTime);
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  }
+
+  formatTime(dateStr) {
+    return dateStr ? new Date(dateStr).toLocaleTimeString("es-AR") : "--:--";
+  }
+
+  getCashState(cashData) {
+    if (!cashData) {
+      return {
+        isOpen: false,
+        operator: null,
+        currentAmount: 0,
+        startTime: null,
+        duration: "0h 0m",
+      };
+    }
+
+    return {
+      isOpen: cashData.status === "open",
+      operator: `Usuario ${cashData.userid}`,
+      currentAmount: parseFloat(cashData.startingcash) || 0,
+      startTime: cashData.starttime,
+      duration: this.calculateOpenDuration(cashData.starttime),
+      id: cashData.id,
+    };
+  }
+
+  isCacheValid() {
+    return (
+      this.cache.cashStatus &&
+      this.cache.lastUpdate &&
+      Date.now() - this.cache.lastUpdate < this.cache.ttl
+    );
+  }
+
+  clearCache() {
     this.cache = {
       cashStatus: null,
       todaySales: null,
+      movements: null,
       lastUpdate: null,
-      ttl: 60000,
+      ttl: 30000,
     };
-    console.log("💰 [CashService] Cache invalidado");
-  }
-
-  // ✅ VERIFICAR SI EL CACHE ES VÁLIDO
-  isCacheValid(key) {
-    if (!this.cache[key] || !this.cache.lastUpdate) {
-      return false;
-    }
-
-    const now = Date.now();
-    return now - this.cache.lastUpdate < this.cache.ttl;
-  }
-
-  // ✅ OBTENER USUARIO AUTENTICADO
-  getUserWithToken() {
-    try {
-      const user =
-        JSON.parse(sessionStorage.getItem("user")) ||
-        JSON.parse(localStorage.getItem("user"));
-      const token =
-        sessionStorage.getItem("token") ||
-        localStorage.getItem("token") ||
-        (user && user.token);
-      return user && token ? { ...user, token } : null;
-    } catch (error) {
-      console.error("❌ [CashService] Error obteniendo usuario:", error);
-      return null;
-    }
-  }
-
-  // ✅ MANEJO DE ERRORES DE AUTENTICACIÓN
-  handleAuthError(error) {
-    if (error.message.includes("401") || error.message.includes("token")) {
-      console.error("🔐 [CashService] Error de autenticación");
-
-      // Limpiar almacenamiento local
-      localStorage.removeItem("user");
-      sessionStorage.removeItem("user");
-      localStorage.removeItem("token");
-      sessionStorage.removeItem("token");
-
-      // Redirigir a login
-      setTimeout(() => {
-        window.location.href = "/login.html";
-      }, 1000);
-
-      throw new Error("Sesión expirada. Por favor, inicia sesión nuevamente.");
-    }
-    throw error;
+    console.log("💰 [CashService] Cache completamente limpiado");
   }
 }
 
-// ✅ CREAR INSTANCIA GLOBAL
-window.cashService = new CashService();
-
-// ✅ EXPORTAR PARA MÓDULOS ES6
-export default window.cashService;
+export default CashService;

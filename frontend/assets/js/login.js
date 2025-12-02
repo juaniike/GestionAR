@@ -1,12 +1,14 @@
-// assets/js/login.js - CON RUTA CORREGIDA
+// assets/js/login.js
+import AuthService from "./services/auth.service.js";
+
 class LoginManager {
   constructor() {
-    this.API_URL = "http://localhost:3000"; // Tu backend
+    this.authService = new AuthService();
     this.init();
   }
 
   init() {
-    console.log("🔐 Inicializando sistema de login...");
+    console.log("🔐 Inicializando LoginManager...");
     this.setupEventListeners();
     this.checkExistingAuth();
     this.focusUsername();
@@ -15,198 +17,119 @@ class LoginManager {
   setupEventListeners() {
     const loginForm = document.getElementById("loginForm");
     if (loginForm) {
-      loginForm.addEventListener("submit", (e) => this.handleLogin(e));
+      loginForm.addEventListener("submit", (e) => this.handleFormSubmit(e));
     }
+
+    // Enter key support
+    document.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && document.getElementById("loginForm")) {
+        this.handleLogin();
+      }
+    });
+  }
+
+  handleFormSubmit(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.handleLogin();
+    return false;
   }
 
   checkExistingAuth() {
-    const user = this.getStoredUser();
-    if (user && user.token) {
+    if (this.authService.isAuthenticated()) {
+      console.log("✅ Usuario ya autenticado, redirigiendo...");
       this.redirectToApp();
     }
   }
 
-  async handleLogin(e) {
-    e.preventDefault();
-
+  async handleLogin() {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
     const loginButton = document.getElementById("loginButton");
 
+    // Validaciones básicas
     if (!username || !password) {
-      this.showError("Completa todos los campos");
+      this.showError("Por favor completá todos los campos");
       return;
     }
 
     this.setLoadingState(loginButton, true);
 
     try {
-      const success = await this.authenticateUser(username, password);
-      if (success) {
-        this.showSuccess("¡Login exitoso! Redirigiendo...");
-        setTimeout(() => this.redirectToApp(), 1000);
-      }
+      await this.authService.login(username, password);
+      console.log("✅ Login exitoso - Redirigiendo...");
+      this.redirectToApp();
     } catch (error) {
-      this.showError(error.message);
+      console.error("❌ Error en login:", error);
+      this.showError(this.getUserFriendlyError(error.message));
       this.setLoadingState(loginButton, false);
     }
   }
 
-  setLoadingState(button, isLoading) {
-    if (isLoading) {
-      button.disabled = true;
-      button.innerHTML =
-        '<i class="material-icons me-2">hourglass_empty</i>Verificando...';
-    } else {
-      button.disabled = false;
-      button.innerHTML = "Iniciar sesión";
+  getUserFriendlyError(errorMessage) {
+    const lowerMessage = errorMessage.toLowerCase();
+
+    if (lowerMessage.includes("incorrect") || lowerMessage.includes("401")) {
+      return "Usuario o contraseña incorrectos";
     }
-  }
-
-  async authenticateUser(username, password) {
-    console.log("🔐 Conectando a API...", { username, password });
-
-    try {
-      // ✅ CORREGIR RUTA SEGÚN TU BACKEND
-      const response = await fetch(`${this.API_URL}/api/users/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-        }),
-      });
-
-      console.log(
-        "📡 Respuesta del servidor:",
-        response.status,
-        response.statusText
-      );
-
-      if (!response.ok) {
-        let errorMessage = `Error ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        } catch (e) {
-          // Si no se puede parsear JSON, usar texto plano
-          const errorText = await response.text();
-          errorMessage = errorText || errorMessage;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      console.log("✅ Login exitoso - Datos recibidos:", data);
-
-      // ✅ ADAPTAR SEGÚN LA RESPUESTA DE TU BACKEND
-      if (data.user && data.token) {
-        // Caso: { user: {...}, token: "..." }
-        sessionStorage.setItem("user", JSON.stringify(data.user));
-        sessionStorage.setItem("token", data.token);
-      } else if (data.id && data.username) {
-        // Caso: el user viene directamente en la respuesta
-        sessionStorage.setItem("user", JSON.stringify(data));
-        sessionStorage.setItem("token", data.token || `token_${Date.now()}`);
-      } else {
-        console.warn("⚠️ Estructura de respuesta no reconocida:", data);
-        throw new Error("Estructura de respuesta inválida");
-      }
-
-      return true;
-    } catch (error) {
-      console.error("❌ Error en login:", error);
-
-      // ✅ FALLBACK PARA DESARROLLO
-      if (
-        error.message.includes("Failed to fetch") ||
-        error.message.includes("Network") ||
-        error.message.includes("404") ||
-        error.message.includes("Route not found")
-      ) {
-        console.warn(
-          "🌐 API no disponible o ruta incorrecta, usando modo desarrollo..."
-        );
-        return this.fallbackToMockAuth(username, password);
-      }
-
-      throw error;
+    if (lowerMessage.includes("network") || lowerMessage.includes("fetch")) {
+      return "Error de conexión. Verificá que el servidor esté ejecutándose";
     }
-  }
-
-  // ✅ FALLBACK MEJORADO
-  fallbackToMockAuth(username, password) {
-    console.log("🛠️ Usando autenticación mock para desarrollo...");
-
-    const mockUsers = {
-      "Juan Ignacio": {
-        password: "123456",
-        role: "owner",
-        id: 1,
-        username: "Juan Ignacio",
-      },
-      admin: { password: "admin123", role: "owner", id: 2, username: "admin" },
-      vendedor: {
-        password: "vendedor123",
-        role: "employee",
-        id: 3,
-        username: "vendedor",
-      },
-      demo: { password: "demo123", role: "employee", id: 4, username: "demo" },
-    };
-
-    // Debug detallado
-    console.log("🔍 Buscando usuario:", username);
-    console.log("🔍 Usuarios disponibles:", Object.keys(mockUsers));
-
-    const user = mockUsers[username];
-
-    if (user && user.password === password) {
-      const userData = {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        token: `dev_token_${Date.now()}`,
-      };
-
-      sessionStorage.setItem("user", JSON.stringify(userData));
-      sessionStorage.setItem("token", userData.token);
-
-      console.log("✅ Mock login exitoso:", userData);
-      return true;
-    } else {
-      console.log("❌ Mock login fallido - Credenciales incorrectas");
-      throw new Error("Usuario o contraseña incorrectos");
+    if (lowerMessage.includes("404")) {
+      return "Servicio no disponible. Contactá al administrador";
     }
+
+    return errorMessage || "Error desconocido al iniciar sesión";
   }
 
   redirectToApp() {
+    console.log("📍 Redirigiendo a app.html");
     window.location.href = "app.html";
   }
 
-  getStoredUser() {
-    try {
-      return JSON.parse(sessionStorage.getItem("user"));
-    } catch (error) {
-      return null;
-    }
+  setLoadingState(button, isLoading) {
+    if (!button) return;
+
+    const originalHTML =
+      '<i class="material-icons me-2">login</i>Iniciar sesión';
+    const loadingHTML =
+      '<i class="material-icons me-2">hourglass_empty</i>Verificando...';
+
+    button.disabled = isLoading;
+    button.innerHTML = isLoading ? loadingHTML : originalHTML;
   }
 
   showError(message) {
-    alert(`❌ ${message}`);
-    document.getElementById("password").focus();
-  }
+    const errorAlert = document.getElementById("errorAlert");
+    const errorMessage = document.getElementById("errorMessage");
 
-  showSuccess(message) {
-    alert(`✅ ${message}`);
+    if (errorAlert && errorMessage) {
+      errorMessage.textContent = message;
+      errorAlert.classList.remove("d-none");
+
+      // Auto-ocultar después de 5 segundos
+      setTimeout(() => {
+        errorAlert.classList.add("d-none");
+      }, 5000);
+    } else {
+      // Fallback
+      alert(`❌ ${message}`);
+    }
+
+    // Focus en campo de contraseña para reintentar
+    const passwordInput = document.getElementById("password");
+    if (passwordInput) {
+      passwordInput.focus();
+      passwordInput.select();
+    }
   }
 
   focusUsername() {
     const usernameInput = document.getElementById("username");
     if (usernameInput) {
-      setTimeout(() => usernameInput.focus(), 100);
+      setTimeout(() => {
+        usernameInput.focus();
+      }, 100);
     }
   }
 }

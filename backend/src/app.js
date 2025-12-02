@@ -12,6 +12,7 @@ const productsRouter = require("./routes/products.routes");
 const salesRouter = require("./routes/sales.routes");
 const salesConsolidatedRouter = require("./routes/salesConsolidated.routes");
 const clientsRouter = require("./routes/clients.routes");
+const movementsRouter = require("./routes/movement.routes");
 
 // Middlewares
 const errorHandler = require("./middlewares/users/errorHandler");
@@ -35,14 +36,31 @@ app.use(
 // CORS
 app.use(
   cors({
-    origin: [
-      "http://127.0.0.1:5500",
-      "http://localhost:5500",
-      "http://localhost:3000",
-    ],
+    origin: ["http://127.0.0.1:5500", "http://localhost:5500"],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
+
+app.get("/api/debug/cookies", (req, res) => {
+  console.log("🍪 [DEBUG-COOKIES] === INICIO ===");
+  console.log("🍪 [DEBUG-COOKIES] req.cookies:", req.cookies);
+  console.log("🍪 [DEBUG-COOKIES] req.signedCookies:", req.signedCookies);
+  console.log("🌐 [DEBUG-COOKIES] req.headers.cookie:", req.headers.cookie);
+  console.log("🌐 [DEBUG-COOKIES] req.headers:", req.headers);
+  console.log("🍪 [DEBUG-COOKIES] === FIN ===");
+
+  res.json({
+    success: true,
+    cookies: req.cookies,
+    signedCookies: req.signedCookies,
+    headers: {
+      cookie: req.headers.cookie,
+      origin: req.headers.origin,
+    },
+  });
+});
 
 // Health check
 app.get("/health", (req, res) => {
@@ -60,11 +78,12 @@ app.use("/products", productsRouter);
 app.use("/sales", salesRouter);
 app.use("/view", salesConsolidatedRouter);
 app.use("/clients", clientsRouter);
+app.use("/movements", movementsRouter);
 
 // Middleware de errores
 app.use(errorHandler);
 
-// ✅ Ruta 404 CORREGIDA - Sin patrón problemático
+// ✅ Ruta 404
 app.use((req, res) => {
   res.status(404).json({
     error: 404,

@@ -1,6 +1,7 @@
 const usersServices = require("../services/users.service");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { patch } = require("../app");
 require("dotenv").config();
 
 const MAX_ATTEMPTS = parseInt(process.env.MAX_ATTEMPTS, 10) || 3;
@@ -100,14 +101,31 @@ const login = async (req, res, next) => {
       { expiresIn: "1d" }
     );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      signed: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    // En el backend - users.controller.js
+    // console.log("🍪 [BACKEND-LOGIN] Configurando cookie...");
+    // console.log("🔧 [BACKEND-LOGIN] Cookie options:", {
+    //   httpOnly: true,
+    //   secure: false,
+    //   sameSite: "lax",
+    //   signed: false, // ⚠️ CAMBIAR A FALSE TEMPORALMENTE
+    //   maxAge: 24 * 60 * 60 * 1000,
+    //   path: "/",
+    // });
 
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: false,
+    //   sameSite: "none",
+    //   signed: false, // 🔄 CAMBIAR A FALSE
+    //   maxAge: 24 * 60 * 60 * 1000,
+    //   path: "/",
+    // });
+
+    // ✅ AGREGAR LOG PARA VERIFICAR
+    console.log(
+      "✅ [BACKEND-LOGIN] Cookie establecida - Headers:",
+      res.getHeaders()["set-cookie"]
+    );
     res.json({
       message: `Successful Login, ${user.username}!`,
       user: {

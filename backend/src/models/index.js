@@ -6,6 +6,8 @@ const CashRegister = require("./CashRegister");
 const Sales = require("./Sales");
 const SalesItem = require("./SalesItem");
 const Products = require("./Products");
+const movement = require("./Movement");
+const Movement = require("./Movement");
 // Relaciones ya definidas dentro de los modelos
 
 // Sincronizar tablas
@@ -25,5 +27,6 @@ module.exports = {
   Sales,
   SalesItem,
   Products,
+  Movement,
   initDB,
 };
