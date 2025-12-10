@@ -6,7 +6,7 @@ const CashRegister = require("./CashRegister");
 const Sales = require("./Sales");
 const SalesItem = require("./SalesItem");
 const Products = require("./Products");
-const movement = require("./Movement");
+const Clients = require("./Clients");
 const Movement = require("./Movement");
 // Relaciones ya definidas dentro de los modelos
 
@@ -27,6 +27,7 @@ module.exports = {
   Sales,
   SalesItem,
   Products,
+  Clients,
   Movement,
   initDB,
 };

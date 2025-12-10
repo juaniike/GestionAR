@@ -220,12 +220,14 @@
               <div class="col-md-8">
                 <div class="input-group input-group-static">
                   <label>Cliente (opcional)</label>
-                  <input
-                    type="text"
+                  <select
                     id="cliente"
                     class="form-control"
-                    placeholder="Nombre del cliente"
-                  />
+                    placeholder="Nombre del
+                    cliente"
+                  >
+                    <option value="">Selecciona un cliente...</option>
+                  </select>
                 </div>
               </div>
               <div class="col-md-4">
@@ -288,6 +290,7 @@
                     <option value="cash">Efectivo</option>
                     <option value="card">Tarjeta</option>
                     <option value="virtualpay">Transferencia</option>
+                    <option value="credit">Cuenta Corriente</option>
                   </select>
                 </div>
               </div>

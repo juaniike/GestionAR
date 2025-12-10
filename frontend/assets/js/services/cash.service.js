@@ -21,11 +21,20 @@ class CashService {
       }
 
       console.log("💰 [CashService] Obteniendo estado de caja...");
-      const cashData = await this.apiService.get(
+      const response = await this.apiService.get(
         this.apiService.endpoints.CASH_STATUS
       );
 
-      this.cache.cashStatus = cashData || null;
+      // ✅ CORREGIDO: Manejar estructura de la API
+      let cashData = null;
+      if (response && response.success === true) {
+        cashData = response.data || null;
+      } else if (response && response.id) {
+        // Caso: Datos directamente (backward compatibility)
+        cashData = response;
+      }
+
+      this.cache.cashStatus = cashData;
       this.cache.lastUpdate = Date.now();
 
       console.log(
@@ -89,6 +98,62 @@ class CashService {
     }
   }
 
+  // ✅ CORREGIDO: Obtener todas las ventas
+  async getAllSales(filters = {}) {
+    try {
+      console.log("💰 [CashService] Obteniendo todas las ventas...", filters);
+
+      // Construir query params
+      const queryParams = new URLSearchParams();
+      if (filters.userid) queryParams.append("userid", filters.userid);
+      if (filters.status) queryParams.append("status", filters.status);
+      if (filters.paymentmethod)
+        queryParams.append("paymentmethod", filters.paymentmethod);
+      if (filters.startDate) queryParams.append("startDate", filters.startDate);
+      if (filters.endDate) queryParams.append("endDate", filters.endDate);
+
+      const endpoint = queryParams.toString()
+        ? `${this.apiService.endpoints.SALES}?${queryParams}`
+        : this.apiService.endpoints.SALES;
+
+      const response = await this.apiService.get(endpoint);
+
+      console.log("📡 [CashService] Respuesta recibida:", response);
+
+      // ✅ CORRECCIÓN: Manejar estructura de la API
+      let salesArray = [];
+
+      if (
+        response &&
+        response.success === true &&
+        Array.isArray(response.data)
+      ) {
+        // Caso: { success: true, data: [...] }
+        salesArray = response.data;
+      } else if (Array.isArray(response)) {
+        // Caso: Ya es array directamente
+        salesArray = response;
+      } else if (response && Array.isArray(response.data)) {
+        // Caso: { data: [...] }
+        salesArray = response.data;
+      } else if (response && response.success === true && response.data) {
+        // Caso: { success: true, data: {...}} (pero no array)
+        // Convertir a array si es un solo objeto
+        salesArray = [response.data];
+      } else {
+        console.warn("⚠️ [CashService] Estructura inesperada:", response);
+        salesArray = [];
+      }
+
+      console.log(`💰 [CashService] ${salesArray.length} ventas obtenidas`);
+      return salesArray;
+    } catch (error) {
+      console.error("❌ [CashService] Error obteniendo ventas:", error);
+      return [];
+    }
+  }
+
+  // ✅ CORREGIDO: Obtener ventas del día
   async getTodaySales(cashRegisterId = null) {
     try {
       // Si ya tenemos ventas en cache y son recientes, usarlas
@@ -101,15 +166,23 @@ class CashService {
 
       console.log("💰 [CashService] Obteniendo ventas del día...");
 
-      // Obtener todas las ventas y filtrar las de hoy
-      const today = new Date().toISOString().split("T")[0];
-      const allSales = await this.apiService.get(
-        this.apiService.endpoints.SALES
-      );
+      // ✅ Usar el método corregido getAllSales()
+      const allSales = await this.getAllSales();
 
-      const todaySales = allSales.filter((sale) => {
-        const saleDate = new Date(sale.date).toISOString().split("T")[0];
-        return saleDate === today;
+      // Asegurar que sea un array
+      const salesArray = Array.isArray(allSales) ? allSales : [];
+
+      const today = new Date().toISOString().split("T")[0];
+      const todaySales = salesArray.filter((sale) => {
+        try {
+          const saleDate = sale.date
+            ? new Date(sale.date).toISOString().split("T")[0]
+            : null;
+          return saleDate === today;
+        } catch (error) {
+          console.warn("⚠️ Error procesando fecha de venta:", sale);
+          return false;
+        }
       });
 
       this.cache.todaySales = todaySales;
@@ -120,12 +193,12 @@ class CashService {
       );
       return todaySales;
     } catch (error) {
-      console.error("❌ [CashService] Error obteniendo ventas:", error);
+      console.error("❌ [CashService] Error obteniendo ventas de hoy:", error);
       return [];
     }
   }
 
-  // ✅ NUEVO: Obtener movimientos REALES
+  // ✅ CORREGIDO: Obtener movimientos
   async getMovements(filters = {}) {
     try {
       console.log("💰 [CashService] Obteniendo movimientos...", filters);
@@ -139,12 +212,30 @@ class CashService {
       if (filters.date) queryParams.append("date", filters.date);
 
       const url = `${this.apiService.endpoints.MOVEMENTS}?${queryParams}`;
-      const movements = await this.apiService.get(url);
+      const response = await this.apiService.get(url);
+
+      // ✅ CORRECCIÓN: Manejar estructura de la API
+      let movementsArray = [];
+
+      if (
+        response &&
+        response.success === true &&
+        Array.isArray(response.data)
+      ) {
+        movementsArray = response.data;
+      } else if (Array.isArray(response)) {
+        movementsArray = response;
+      } else if (response && Array.isArray(response.data)) {
+        movementsArray = response.data;
+      } else {
+        console.warn("⚠️ Estructura inesperada en movimientos:", response);
+        movementsArray = [];
+      }
 
       console.log(
-        `💰 [CashService] ${movements?.length || 0} movimientos obtenidos`
+        `💰 [CashService] ${movementsArray.length} movimientos obtenidos`
       );
-      return movements || [];
+      return movementsArray;
     } catch (error) {
       console.error("❌ [CashService] Error obteniendo movimientos:", error);
       return [];
@@ -188,7 +279,7 @@ class CashService {
     }
   }
 
-  // ✅ NUEVO: Obtener movimientos del día actual
+  // ✅ CORREGIDO: Obtener movimientos del día actual
   async getTodayMovements(cashRegisterId = null) {
     try {
       console.log("💰 [CashService] Obteniendo movimientos de hoy...");
@@ -198,12 +289,30 @@ class CashService {
         queryParams.append("cash_register_id", cashRegisterId);
 
       const url = `${this.apiService.endpoints.MOVEMENTS_TODAY}?${queryParams}`;
-      const movements = await this.apiService.get(url);
+      const response = await this.apiService.get(url);
+
+      // ✅ CORRECCIÓN: Manejar estructura de la API
+      let movementsArray = [];
+
+      if (
+        response &&
+        response.success === true &&
+        Array.isArray(response.data)
+      ) {
+        movementsArray = response.data;
+      } else if (Array.isArray(response)) {
+        movementsArray = response;
+      } else if (response && Array.isArray(response.data)) {
+        movementsArray = response.data;
+      } else {
+        console.warn("⚠️ Estructura inesperada en movimientos hoy:", response);
+        movementsArray = [];
+      }
 
       console.log(
-        `💰 [CashService] ${movements?.length || 0} movimientos de hoy`
+        `💰 [CashService] ${movementsArray.length} movimientos de hoy`
       );
-      return movements || [];
+      return movementsArray;
     } catch (error) {
       console.error(
         "❌ [CashService] Error obteniendo movimientos de hoy:",
@@ -213,23 +322,95 @@ class CashService {
     }
   }
 
-  // ✅ NUEVO: Obtener totales de movimientos
   async getMovementTotals(cashRegisterId, date = null) {
     try {
       console.log("💰 [CashService] Obteniendo totales de movimientos...");
 
+      // ✅ CORRECCIÓN CRÍTICA: Si no hay ID válido, verificar estado real
+      if (
+        !cashRegisterId ||
+        cashRegisterId === "null" ||
+        cashRegisterId === "undefined"
+      ) {
+        console.log(
+          "🔍 cashRegisterId inválido, verificando estado de caja..."
+        );
+
+        // Obtener el estado ACTUAL de la caja
+        const cashStatus = await this.getCashStatus();
+
+        // Si no hay caja abierta, devolver ceros inmediatamente
+        if (!cashStatus || cashStatus.status !== "open") {
+          console.log("ℹ️  No hay caja abierta, devolviendo ceros");
+          return { ingresos: 0, egresos: 0 };
+        }
+
+        // Si HAY caja abierta, usar su ID
+        cashRegisterId = cashStatus.id;
+        console.log("✅ Caja abierta encontrada, usando ID:", cashRegisterId);
+      }
+
+      // Solo construir la query si tenemos un ID válido
       const queryParams = new URLSearchParams();
       queryParams.append("cash_register_id", cashRegisterId);
-      if (date) queryParams.append("date", date);
+
+      if (date) {
+        queryParams.append("date", date);
+      }
 
       const url = `${this.apiService.endpoints.MOVEMENTS_TOTALS}?${queryParams}`;
-      const totals = await this.apiService.get(url);
+      console.log("🌐 URL de consulta:", url);
 
-      console.log("💰 [CashService] Totales obtenidos:", totals);
-      return totals || { ingresos: 0, egresos: 0 };
+      const response = await this.apiService.get(url);
+      console.log("💰 [CashService] Respuesta API:", response);
+
+      // ✅ Manejo simple de respuesta
+      if (response && response.success === true && response.data) {
+        return response.data;
+      } else if (
+        response &&
+        (response.ingresos !== undefined || response.egresos !== undefined)
+      ) {
+        return response;
+      } else {
+        console.warn("⚠️  Respuesta inesperada, devolviendo ceros:", response);
+        return { ingresos: 0, egresos: 0 };
+      }
     } catch (error) {
-      console.error("❌ [CashService] Error obteniendo totales:", error);
+      console.error(
+        "❌ [CashService] Error obteniendo totales:",
+        error.message
+      );
+      // Si hay cualquier error, devolver ceros (la UI no se rompe)
       return { ingresos: 0, egresos: 0 };
+    }
+  }
+
+  // ✅ NUEVO: Eliminar movimiento
+  async deleteMovement(id) {
+    try {
+      console.log(`💰 [CashService] Eliminando movimiento #${id}...`);
+
+      const response = await this.apiService.delete(
+        `${this.apiService.endpoints.MOVEMENTS}/${id}`
+      );
+
+      this.clearCache();
+
+      // ✅ CORRECCIÓN: Manejar estructura de la API
+      if (response && response.success === true) {
+        console.log("💰 [CashService] Movimiento eliminado:", response);
+        return response;
+      } else {
+        console.warn("💰 [CashService] Respuesta inesperada:", response);
+        return response || { success: true };
+      }
+    } catch (error) {
+      console.error(
+        `❌ [CashService] Error eliminando movimiento ${id}:`,
+        error
+      );
+      throw error;
     }
   }
 

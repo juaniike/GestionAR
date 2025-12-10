@@ -10,10 +10,12 @@ router.use(auth);
 /*Ventas principales*/
 router.post("/", salesController.createSale);
 router.get("/", salesController.getAllSales);
+router.get("/today", salesController.getTodaySales); // ✅ NUEVO
 router.get("/:id", salesController.getSaleById);
 
-/*Ventas por usuario*/
+/*Ventas por usuario/cliente*/
 router.get("/user/:userid", salesController.getByUser);
+router.get("/client/:client_id", salesController.getSalesByClient); // ✅ NUEVO
 
 /*Reportes y descuentos */
 router.get(
@@ -21,6 +23,11 @@ router.get(
   authRole(["owner"]),
   salesController.getDailyReport
 );
+router.get(
+  "/report/payment-methods",
+  authRole(["owner", "employee"]),
+  salesController.getPaymentMethodsReport
+); // ✅ NUEVO
 router.post(
   "/discount",
   authRole(["owner", "employee"]),

@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Users = require("./Users");
 const CashRegister = require("./CashRegister");
+const Clients = require("./Clients"); // ✅ AGREGAR IMPORT
 
 const Sales = sequelize.define(
   "Sales",
@@ -19,14 +20,22 @@ const Sales = sequelize.define(
         key: "id",
       },
     },
-
-    cashid: {
+    client_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "Clients",
+        key: "id",
+      },
+    },
+    cash_register_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
         model: "CashRegister",
         key: "id",
       },
+      comment: "Para ventas en efectivo, registrar caja utilizada",
     },
     date: {
       type: DataTypes.DATE,
@@ -36,8 +45,19 @@ const Sales = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0.0,
     },
-
     total: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0,
+    },
+    subtotal: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0,
+    },
+    tax: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0,
+    },
+    discount: {
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0.0,
     },
@@ -49,17 +69,50 @@ const Sales = sequelize.define(
       type: DataTypes.ENUM("pending", "paid", "canceled"),
       defaultValue: "paid",
     },
+    observations: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    ticket_number: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      unique: true,
+    },
   },
   {
     tableName: "Sales",
     timestamps: false,
+    indexes: [
+      {
+        fields: ["date"],
+      },
+      {
+        fields: ["userid"],
+      },
+      {
+        fields: ["client_id"],
+      },
+      {
+        fields: ["cash_register_id"],
+      },
+      {
+        fields: ["paymentmethod"],
+      },
+      {
+        fields: ["status"],
+      },
+    ],
   }
 );
 
+// Relaciones
 Users.hasMany(Sales, { foreignKey: "userid" });
 Sales.belongsTo(Users, { foreignKey: "userid" });
 
-CashRegister.hasMany(Sales, { foreignKey: "cashid" });
-Sales.belongsTo(CashRegister, { foreignKey: "cashid" });
+CashRegister.hasMany(Sales, { foreignKey: "cash_register_id" });
+Sales.belongsTo(CashRegister, { foreignKey: "cash_register_id" });
+
+Clients.hasMany(Sales, { foreignKey: "client_id" });
+Sales.belongsTo(Clients, { foreignKey: "client_id" });
 
 module.exports = Sales;

@@ -28,15 +28,44 @@ class SalesService {
         ? `${this.apiService.endpoints.SALES}?${queryParams}`
         : this.apiService.endpoints.SALES;
 
-      const sales = await this.apiService.get(endpoint);
+      const response = await this.apiService.get(endpoint);
 
-      // Procesar datos
-      const processedSales = sales.map((sale) => this.processSaleData(sale));
+      console.log("📡 [SalesService] Respuesta recibida:", response);
+
+      // ✅ CORRECCIÓN: Extraer array correctamente
+      let salesData = [];
+
+      if (response && response.success && Array.isArray(response.data)) {
+        // Caso: { success: true, data: [...] }
+        salesData = response.data;
+      } else if (Array.isArray(response)) {
+        // Caso: Ya es array directamente
+        salesData = response;
+      } else if (response && response.data && Array.isArray(response.data)) {
+        // Caso: { data: [...] }
+        salesData = response.data;
+      } else {
+        console.warn("⚠️ [SalesService] Estructura inesperada:", response);
+        salesData = [];
+      }
+
+      console.log(
+        `📊 [SalesService] Datos brutos:`,
+        salesData.length,
+        "ventas recibidas"
+      );
+
+      // ✅ CORRECCIÓN: Usar la variable CORRECTA (salesData, no sales)
+      const processedSales = salesData.map((sale) =>
+        this.processSaleData(sale)
+      );
 
       this.cache.sales = processedSales;
       this.cache.lastUpdate = Date.now();
 
-      console.log(`🧾 [SalesService] ${processedSales.length} ventas cargadas`);
+      console.log(
+        `🧾 [SalesService] ${processedSales.length} ventas procesadas`
+      );
       return processedSales;
     } catch (error) {
       console.error("❌ [SalesService] Error obteniendo ventas:", error);
@@ -218,17 +247,23 @@ class SalesService {
     }
   }
 
-  // Métodos de utilidad
   processSaleData(sale) {
     return {
       id: sale.id,
       userid: sale.userid,
-      cashid: sale.cashid,
-      date: sale.date,
+      // ✅ CORRECCIÓN: cash_register_id en lugar de cashid
+      cash_register_id: sale.cash_register_id || null,
+      client_id: sale.client_id || null,
+      date: sale.date ? new Date(sale.date) : new Date(),
       total: parseFloat(sale.total) || 0,
       profit: parseFloat(sale.profit) || 0,
-      paymentmethod: sale.paymentmethod,
-      status: sale.status,
+      subtotal: parseFloat(sale.subtotal) || 0,
+      tax: parseFloat(sale.tax) || 0,
+      discount: parseFloat(sale.discount) || 0,
+      paymentmethod: sale.paymentmethod || "cash",
+      status: sale.status || "paid",
+      observations: sale.observations || null,
+      ticket_number: sale.ticket_number || null,
       items: sale.SalesItems
         ? sale.SalesItems.map((item) => ({
             id: item.id,
@@ -239,13 +274,25 @@ class SalesService {
             product: item.Product
               ? {
                   id: item.Product.id,
+                  barcode: item.Product.barcode,
                   name: item.Product.name,
                   category: item.Product.category,
                   price: parseFloat(item.Product.price) || 0,
+                  cost: parseFloat(item.Product.cost) || 0,
+                  stock: item.Product.stock || 0,
+                  minstock: item.Product.minstock || 0,
                 }
               : null,
           }))
         : [],
+      client: sale.Client
+        ? {
+            id: sale.Client.id,
+            name: sale.Client.name,
+            email: sale.Client.email,
+            phone: sale.Client.phone,
+          }
+        : null,
     };
   }
 
